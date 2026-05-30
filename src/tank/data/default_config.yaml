@@ -1,0 +1,7 @@
+tank:
+  width: 56
+  height: 14
+serve:
+  port: 7311
+render:
+  line_unicode: true

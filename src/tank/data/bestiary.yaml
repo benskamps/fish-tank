@@ -1,0 +1,129 @@
+guppy:
+  category: common
+  glyph_pool: [">°))<", "<°))>", ">o))<"]
+  fossil_glyph: "·"
+  base_lifespan_days: [7, 30]
+  spawn_trigger: bestiary_roll
+  spawn_weight: 1.0
+  mood_bias: {calm: 0.7, darting: 0.2, sleeping: 0.1}
+  description: "The default fish. Cheerful, unremarkable, always around."
+
+tetra:
+  category: common
+  glyph_pool: ["<·><", "><·>"]
+  fossil_glyph: "."
+  base_lifespan_days: [10, 40]
+  spawn_trigger: bestiary_roll
+  spawn_weight: 0.7
+  mood_bias: {calm: 0.6, darting: 0.3, sleeping: 0.1}
+  description: "Small, quick, schooling instinct."
+
+snail:
+  category: common
+  glyph_pool: ["@_", "_@"]
+  fossil_glyph: "○"
+  base_lifespan_days: [60, 180]
+  spawn_trigger: bestiary_roll
+  spawn_weight: 0.15
+  mood_bias: {calm: 0.95, sleeping: 0.05}
+  description: "Eats silt. Mostly stationary. Outlives most fish."
+
+coldfin:
+  category: weather_cold
+  glyph_pool: ["><((°>", "<°)))><", "{·_·}>"]
+  fossil_glyph: "✦"
+  base_lifespan_days: [14, 60]
+  spawn_trigger: cold_sustained
+  spawn_weight: 1.0
+  mood_bias: {sleeping: 0.4, calm: 0.5, darting: 0.1}
+  description: "Thrives when the room is cool. Drifts in after a quiet stretch."
+
+frostneon:
+  category: weather_cold
+  glyph_pool: ["<*°)>", "<(*°)<"]
+  fossil_glyph: "❅"
+  base_lifespan_days: [7, 30]
+  spawn_trigger: cold_sustained
+  spawn_weight: 0.2
+  mood_bias: {calm: 0.6, darting: 0.4}
+  description: "Rare cold-water visitor. Faint glow."
+
+thermalwisp:
+  category: weather_hot
+  glyph_pool: [">~~~>", "~~>>>", ">.>"]
+  fossil_glyph: "✧"
+  base_lifespan_days: [3, 14]
+  spawn_trigger: heat_sustained
+  spawn_weight: 1.0
+  mood_bias: {darting: 0.7, calm: 0.3}
+  description: "Heat-borne. Quick to spawn, quick to go."
+
+emberlung:
+  category: weather_hot
+  glyph_pool: [">≈≈≈>", "<≈≈<"]
+  fossil_glyph: "✸"
+  base_lifespan_days: [2, 8]
+  spawn_trigger: heat_sustained
+  spawn_weight: 0.25
+  mood_bias: {darting: 0.8, dazed: 0.2}
+  description: "Rare hot-water visitor. Breathes the warmth."
+
+crashstrider:
+  category: crash_borne
+  glyph_pool: ["><x>", "><X>"]
+  fossil_glyph: "✗"
+  base_lifespan_days: [1, 5]
+  spawn_trigger: kernel_event
+  spawn_weight: 1.0
+  mood_bias: {darting: 0.5, dazed: 0.5}
+  description: "Born of crashes. Short, frantic life."
+
+shipfish:
+  category: project_born
+  glyph_pool: ["><((((°>", "<°))))><"]
+  fossil_glyph: "★"
+  base_lifespan_days: [30, 365]
+  spawn_trigger: ship_event
+  spawn_weight: 1.0
+  mood_bias: {calm: 0.6, darting: 0.3, sleeping: 0.1}
+  description: "Born when a project ships. Named after the project."
+
+founderfish:
+  category: project_born
+  glyph_pool: ["<°)F)><"]
+  fossil_glyph: "✪"
+  base_lifespan_days: [60, 730]
+  spawn_trigger: new_project
+  spawn_weight: 1.0
+  mood_bias: {calm: 0.8, darting: 0.2}
+  description: "Born when a new project enters ~/projects/. Long-lived."
+
+driftfish:
+  category: project_born
+  glyph_pool: ["><o>", "<o><"]
+  fossil_glyph: "."
+  base_lifespan_days: [3, 14]
+  spawn_trigger: commit_event
+  spawn_weight: 1.0
+  mood_bias: {calm: 0.5, darting: 0.5}
+  description: "Born from regular commits. Short-lived. Many."
+
+witnessfish:
+  category: seal_born
+  glyph_pool: ["<°)W><"]
+  fossil_glyph: "◇"
+  base_lifespan_days: [14, 90]
+  spawn_trigger: seal_event
+  spawn_weight: 1.0
+  mood_bias: {calm: 0.9, sleeping: 0.1}
+  description: "Spawns when a seal is written. Remembers what was sealed."
+
+night-fish:
+  category: nocturnal
+  glyph_pool: ["~(o_o)~", "·(u_u)·", "°<))°<", ">°))°<"]
+  fossil_glyph: "☾"
+  base_lifespan_days: [1, 2]
+  spawn_trigger: witching
+  spawn_weight: 1.0
+  mood_bias: {sleeping: 0.5, calm: 0.3, darting: 0.2}
+  description: "Only surfaces in the witching hour (00:00-03:00). Submerges at dawn — never quite seen in daylight. It knows when you're up too late."

@@ -1,0 +1,23 @@
+oom:
+  default: "{name} ({species}) — born {born_short}, taken by the great forgetting on {died_short}."
+  shipfish: "{name}, who carried {project} into the world, lost to memory on {died_short}."
+
+thermal_shock:
+  default: "{name} ({species}) — couldn't ride out the heat of {died_short}."
+
+starvation:
+  default: "{name} ({species}) — drifted away during a long quiet. {age_days}d."
+
+kernel_event:
+  default: "{name} ({species}) — went down with the ship on {died_short}."
+
+old_age:
+  default: "{name} ({species}) — a long life of {age_days} days. Drifted into the dark."
+  shipfish: "{name} — carried {project} far. Set down its work after {age_days} days."
+  founderfish: "{name} — laid the foundation. {age_days} days. Remembered."
+
+released:
+  default: "{name} — set free on {died_short}. Out there somewhere."
+
+crowding:
+  default: "{name} ({species}) — the tank grew crowded. {died_short}."
