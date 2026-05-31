@@ -43,10 +43,30 @@ def test_observer_picks_up_new_commit(tmp_path, fixed_now):
     world = _make_world(fixed_now)
     obs = Observer(projects_root=tmp_path / "projects",
                    seals_dir=tmp_path / "seals_doesntexist")
+    # First scan baselines the repo (new_project fires, but no historical commits).
+    first = obs.scan_since(world.last_tick_at, world)
+    assert "new_project" in [e.kind for e in first]
+    # A commit made AFTER the tank starts watching spawns a commit event.
+    _commit(proj, "feat: world")
     events = obs.scan_since(world.last_tick_at, world)
-    kinds = [e.kind for e in events]
-    assert "new_project" in kinds
-    assert "commit" in kinds
+    assert "commit" in [e.kind for e in events]
+
+
+def test_first_scan_does_not_dump_commit_history(tmp_path, fixed_now):
+    """Regression guard for the 1358-fish bug: a repo with lots of history must
+    NOT emit a commit event per historical commit on first sight."""
+    proj = tmp_path / "projects" / "busy"
+    proj.mkdir(parents=True)
+    _init_repo(proj)
+    for i in range(8):
+        _commit(proj, f"commit {i}")
+
+    world = _make_world(fixed_now)
+    obs = Observer(projects_root=tmp_path / "projects",
+                   seals_dir=tmp_path / "seals_doesntexist")
+    events = obs.scan_since(world.last_tick_at, world)
+    assert [e for e in events if e.kind in ("commit", "ship")] == []
+    assert world.seen_commits.get(str(proj))  # but HEAD is baselined
 
 
 def test_observer_dedups_already_seen_commits(tmp_path, fixed_now):
@@ -67,13 +87,36 @@ def test_observer_promotes_ship_commit(tmp_path, fixed_now):
     proj = tmp_path / "projects" / "demo"
     proj.mkdir(parents=True)
     _init_repo(proj)
-    _commit(proj, "ship v0.1.0")
+    _commit(proj, "init")  # baseline commit
 
     world = _make_world(fixed_now)
     obs = Observer(projects_root=tmp_path / "projects",
                    seals_dir=tmp_path / "seals_doesntexist")
+    obs.scan_since(world.last_tick_at, world)  # baseline the repo
+    _commit(proj, "ship v0.1.0")
     events = obs.scan_since(world.last_tick_at, world)
     assert any(e.kind == "ship" for e in events)
+
+
+def test_pre_existing_projects_and_seals_are_baselined(tmp_path):
+    """Items that pre-date the tank's creation are baselined silently — no
+    founderfish per existing repo, no witnessfish per existing seal."""
+    import datetime as dt
+    future = dt.datetime(2099, 1, 1, tzinfo=dt.timezone.utc)
+    proj = tmp_path / "projects" / "old"
+    proj.mkdir(parents=True)
+    _init_repo(proj)
+    _commit(proj, "history")
+    seals = tmp_path / "seals"
+    seals.mkdir()
+    (seals / "old-seal.md").write_text("# old")
+
+    world = _make_world(future)  # tank "created" far in the future of these files
+    obs = Observer(projects_root=tmp_path / "projects", seals_dir=seals)
+    events = obs.scan_since(world.last_tick_at, world)
+    assert events == []  # all pre-existing -> baselined, nothing spawns
+    assert "old" in world.seen_projects
+    assert "old-seal.md" in world.seen_seals
 
 
 def test_observer_picks_up_new_seal(tmp_path, fixed_now):

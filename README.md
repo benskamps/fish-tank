@@ -11,7 +11,7 @@ git clone <repo>
 cd fish-tank
 python -m venv .venv && .venv/Scripts/activate
 pip install -e .
-tank install         # registers a Scheduled Task to run `tank tick` every 15 min
+tank install         # registers a Scheduled Task to run `tank tick` every 30 min
 tank tick            # seed the first world right now
 ```
 
@@ -35,7 +35,7 @@ tank uninstall       # remove the Scheduled Task
 
 ## How it lives
 
-- A 15-min Windows Scheduled Task runs `tank tick`: samples hardware (LibreHardwareMonitor → psutil → nvidia-smi), scans real events (commits, ships, seals, new projects in `~/projects/`), spawns and kills fish, advances weather, writes state to `~/.tank/world.json`. Console subprocesses (git, nvidia-smi) run windowless, so nothing flashes on screen.
+- A 30-min Windows Scheduled Task runs `tank tick`: samples hardware (LibreHardwareMonitor → psutil → nvidia-smi), scans real events (commits, ships, seals, new projects in `~/projects/`), spawns and kills fish, advances weather, writes state to `~/.tank/world.json`. Console subprocesses (git, nvidia-smi) run windowless, so nothing flashes on screen.
 - All renderers (peek, live, serve, snapshot file) are short-lived readers of one state file.
 - No LLM in the runtime loop. The personality is in `~/.tank/bestiary.yaml` and `~/.tank/epitaphs.yaml` (both user-editable).
 

@@ -57,8 +57,12 @@ class Observer:
             ctime = dt.datetime.fromtimestamp(
                 entry.stat().st_ctime, tz=dt.timezone.utc
             )
-            out.append(Event(kind="new_project", project=entry.name,
-                             detail=str(entry), at=ctime))
+            # Only spawn for projects that appeared AFTER the tank started
+            # watching. Pre-existing projects are baselined silently — otherwise
+            # a fresh tank spawns a founderfish for every repo you already have.
+            if ctime >= world.created_at:
+                out.append(Event(kind="new_project", project=entry.name,
+                                 detail=str(entry), at=ctime))
         return out
 
     def _scan_git(self, world: World) -> list[Event]:
@@ -80,8 +84,15 @@ class Observer:
             seen = world.seen_commits.get(key)
             if seen == head:
                 continue
+            if seen is None:
+                # First time we've seen this repo: baseline at HEAD and emit
+                # nothing. The tank notices commits from when it STARTS watching
+                # — otherwise a fresh install spawns a fish for every commit in
+                # every repo's whole history (that's the 1358-fish bug).
+                world.seen_commits[key] = head
+                continue
             try:
-                rev_range = f"{seen}..{head}" if seen else head
+                rev_range = f"{seen}..{head}"
                 log = proc.check_output(
                     ["git", "-C", str(entry), "log", rev_range,
                      "--format=%H%x09%cI%x09%s"],
@@ -117,6 +128,9 @@ class Observer:
             mtime = dt.datetime.fromtimestamp(
                 seal.stat().st_mtime, tz=dt.timezone.utc
             )
-            out.append(Event(kind="seal_written", project=None,
-                             detail=seal.name, at=mtime))
+            # Baseline pre-existing seals silently; only seals written after the
+            # tank started watching spawn a witnessfish.
+            if mtime >= world.created_at:
+                out.append(Event(kind="seal_written", project=None,
+                                 detail=seal.name, at=mtime))
         return out
