@@ -3,12 +3,20 @@ from __future__ import annotations
 
 import contextlib
 import datetime as dt
+import logging
 import os
 import time
 
 from tank import paths
 from tank.models import Weather, World
 from tank.serdes import world_from_json, world_to_json
+
+logger = logging.getLogger(__name__)
+
+# A normal tick holds the lock for well under a second (the Scheduled Task even
+# caps a run at 60s). If a lock file outlives this, its owner crashed without
+# releasing it — reclaim it rather than freezing the tank forever.
+STALE_LOCK_S = 120.0
 
 
 class WorldStore:
@@ -47,8 +55,20 @@ class WorldStore:
         while True:
             try:
                 fh = open(lock_file, "x")
+                fh.write(f"{os.getpid()} {time.time()}")
+                fh.flush()
                 break
             except FileExistsError:
+                # Reclaim a stale lock left behind by a crashed tick, so the
+                # tank can never be frozen permanently by one bad run.
+                try:
+                    age = time.time() - lock_file.stat().st_mtime
+                    if age > STALE_LOCK_S:
+                        lock_file.unlink()
+                        logger.warning("reclaimed stale tick lock (age %.0fs)", age)
+                        continue
+                except FileNotFoundError:
+                    continue  # released between our open and stat — just retry
                 if time.monotonic() >= deadline:
                     raise TimeoutError("tick lock held by another process")
                 time.sleep(0.05)

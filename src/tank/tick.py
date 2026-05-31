@@ -4,6 +4,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import logging
+import os
 from dataclasses import dataclass
 
 from tank import paths
@@ -13,6 +14,7 @@ from tank.hardware import sample as real_sample
 from tank.models import Death
 from tank.observer import Observer
 from tank.mood import compute as mood_compute
+from tank.publish import publish, publish_gist, to_public_snapshot
 from tank.render.frame import compose, render as render_frame
 from tank.spawn import run as spawn_run, submerge_dawn
 from tank.mortality import run as mortality_run
@@ -92,6 +94,46 @@ class TickEngine:
                 "hw_sources": sample.sources_used,
                 "degraded": sample.degraded,
             }) + "\n")
+
+        self._maybe_publish(world)
+
+    def _maybe_publish(self, world) -> None:
+        """Opt-in: publish a sanitized snapshot if a target is configured.
+
+        Prefers a GitHub Gist target (gist_id + gist_token); falls back to an
+        HTTP POST target (publish_url + publish_token). Config comes from
+        ~/.tank/publish.json with environment variables overriding it — the file
+        path is what lets a Windows Scheduled Task publish without depending on
+        cached env-var inheritance. No target -> no-op (the OSS default).
+        Best-effort: failures are logged inside the publisher, never raised."""
+        cfg = self._publish_config()
+        if cfg.get("gist_id") and cfg.get("gist_token"):
+            publish_gist(to_public_snapshot(world), cfg["gist_id"], cfg["gist_token"])
+            return
+        if cfg.get("publish_url") and cfg.get("publish_token"):
+            publish(to_public_snapshot(world), cfg["publish_url"], cfg["publish_token"])
+
+    @staticmethod
+    def _publish_config() -> dict:
+        """Merge publish config: ~/.tank/publish.json first, env vars override."""
+        cfg: dict = {}
+        try:
+            p = paths.publish_config_path()
+            if p.exists():
+                raw = json.loads(p.read_text(encoding="utf-8"))
+                if isinstance(raw, dict):
+                    cfg.update({k: v for k, v in raw.items() if isinstance(v, str)})
+        except Exception as e:
+            logger.warning("publish config read failed: %s", e)
+        env_map = {
+            "gist_id": "TANK_GIST_ID", "gist_token": "TANK_GIST_TOKEN",
+            "publish_url": "TANK_PUBLISH_URL", "publish_token": "TANK_PUBLISH_TOKEN",
+        }
+        for key, env in env_map.items():
+            v = os.environ.get(env)
+            if v:
+                cfg[key] = v
+        return cfg
 
 
 def _death_to_dict(d: Death) -> dict:

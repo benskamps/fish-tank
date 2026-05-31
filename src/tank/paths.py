@@ -76,3 +76,9 @@ def log_path() -> Path:
 
 def lock_path() -> Path:
     return tank_home() / "world.lock"
+
+
+def publish_config_path() -> Path:
+    """Optional publish config (JSON). Lets the scheduled task pick up publish
+    settings without relying on environment-variable inheritance."""
+    return tank_home() / "publish.json"

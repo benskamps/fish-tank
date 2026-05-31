@@ -1,6 +1,6 @@
 param(
     [string]$TaskName = "FishTankTick",
-    [int]$IntervalMinutes = 5,
+    [int]$IntervalMinutes = 15,
     [string]$PythonW = ""
 )
 

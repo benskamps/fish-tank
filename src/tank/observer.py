@@ -8,6 +8,7 @@ import re
 import subprocess
 from pathlib import Path
 
+from tank import proc
 from tank.models import Event, World
 
 logger = logging.getLogger(__name__)
@@ -69,7 +70,7 @@ class Observer:
                 continue
             key = str(entry)
             try:
-                head = subprocess.check_output(
+                head = proc.check_output(
                     ["git", "-C", str(entry), "rev-parse", "HEAD"],
                     encoding="utf-8", errors="replace",
                     timeout=2.0, stderr=subprocess.DEVNULL,
@@ -81,7 +82,7 @@ class Observer:
                 continue
             try:
                 rev_range = f"{seen}..{head}" if seen else head
-                log = subprocess.check_output(
+                log = proc.check_output(
                     ["git", "-C", str(entry), "log", rev_range,
                      "--format=%H%x09%cI%x09%s"],
                     encoding="utf-8", errors="replace",

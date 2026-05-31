@@ -10,6 +10,8 @@ import urllib.error
 import urllib.request
 from typing import Any
 
+from tank import proc
+
 import psutil
 
 from tank.models import HardwareSample
@@ -115,7 +117,7 @@ def _psutil_fill(partial: dict) -> dict:
 
 def _try_nvidia_smi() -> tuple[float, float] | None:
     try:
-        out = subprocess.check_output(
+        out = proc.check_output(
             ["nvidia-smi", "--query-gpu=temperature.gpu,utilization.gpu",
              "--format=csv,noheader,nounits"],
             timeout=1.0,

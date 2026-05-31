@@ -61,3 +61,33 @@ def test_lock_blocks_concurrent_writers(tmp_tank_dir, fixed_now):
         with pytest.raises(TimeoutError):
             with store.lock(timeout=0.1):
                 pass
+
+
+def test_stale_lock_is_reclaimed(tmp_tank_dir):
+    """A lock file left by a crashed tick must not freeze the tank forever."""
+    import os
+    import time
+    from tank import paths
+    from tank.world import STALE_LOCK_S
+
+    lock_file = paths.lock_path()
+    paths.ensure_dirs()
+    lock_file.write_text("99999 old")  # pretend a dead process owns it
+    old = time.time() - (STALE_LOCK_S + 60)
+    os.utime(lock_file, (old, old))
+
+    store = WorldStore()
+    acquired = False
+    with store.lock(timeout=0.5):  # would TimeoutError if not reclaimed
+        acquired = True
+    assert acquired
+    assert not lock_file.exists()  # released cleanly afterward
+
+
+def test_lock_writes_owner_pid(tmp_tank_dir):
+    import os
+    from tank import paths
+    store = WorldStore()
+    with store.lock(timeout=0.5):
+        content = paths.lock_path().read_text()
+    assert content.split()[0] == str(os.getpid())
