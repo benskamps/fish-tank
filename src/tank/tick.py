@@ -41,7 +41,7 @@ class TickEngine:
     def __post_init__(self):
         self.clock = self.clock or Clock()
         self.hardware = self.hardware or _RealHardware()
-        self.observer = self.observer or Observer()
+        self.observer = self.observer or Observer.from_config()
         self.species = self.species or load_bundled()
         self.store = WorldStore()
 
@@ -107,11 +107,39 @@ class TickEngine:
         cached env-var inheritance. No target -> no-op (the OSS default).
         Best-effort: failures are logged inside the publisher, never raised."""
         cfg = self._publish_config()
-        if cfg.get("gist_id") and cfg.get("gist_token"):
-            publish_gist(to_public_snapshot(world), cfg["gist_id"], cfg["gist_token"])
+        gist = cfg.get("gist_id") and cfg.get("gist_token")
+        http = cfg.get("publish_url") and cfg.get("publish_token")
+        if not (gist or http):
             return
-        if cfg.get("publish_url") and cfg.get("publish_token"):
-            publish(to_public_snapshot(world), cfg["publish_url"], cfg["publish_token"])
+        snap = to_public_snapshot(world, self._resolve_public_names())
+        if gist:
+            publish_gist(snap, cfg["gist_id"], cfg["gist_token"])
+        else:
+            publish(snap, cfg["publish_url"], cfg["publish_token"])
+
+    def _resolve_public_names(self) -> dict:
+        """Allow-list of {project: label} whose fish may be publicly named.
+
+        Auto from public GitHub repos + a manual map in publish.json
+        (`public_names`). Best-effort and cached; never blocks the tick."""
+        try:
+            from tank import public_names
+            manual: dict = {}
+            p = paths.publish_config_path()
+            if p.exists():
+                raw = json.loads(p.read_text(encoding="utf-8"))
+                pn = raw.get("public_names") if isinstance(raw, dict) else None
+                if isinstance(pn, dict):
+                    manual = {str(k): str(v) for k, v in pn.items()}
+                elif isinstance(pn, list):
+                    manual = {str(n): str(n) for n in pn}
+            obs = self.observer
+            return public_names.resolve(
+                getattr(obs, "projects_root", None),
+                getattr(obs, "watch", set()), manual)
+        except Exception as e:
+            logger.warning("public-name resolve failed: %s", e)
+            return {}
 
     @staticmethod
     def _publish_config() -> dict:

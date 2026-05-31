@@ -22,23 +22,37 @@ logger = logging.getLogger(__name__)
 SNAPSHOT_SCHEMA = 1
 
 
-def to_public_snapshot(world: World) -> dict:
+def _public_fish(f, names: dict) -> dict:
+    """Render-safe view of one fish. Adds `name` only when the fish's project is
+    in the public allow-list — never leaks a private project name."""
+    out = {"species": f.species, "glyph": f.glyph, "mood": f.mood, "zone": f.zone}
+    label = names.get(f.project) if f.project else None
+    if label:
+        out["name"] = str(label)
+    return out
+
+
+def to_public_snapshot(world: World, public_names: dict | None = None) -> dict:
     """Build the public, sanitized view of the world.
 
-    Safe (rendered on the page): per-fish species/glyph/mood, weather + phase +
-    mood, fish count, fossil glyphs, last-tick time.
-    Withheld (never copied): fish name/provenance/project, seen_commits/seals/
-    projects, anything that embeds a real project, commit, or seal identity.
+    Safe (rendered on the page): per-fish species/glyph/mood/zone, weather +
+    phase + mood, fish count, fossil glyphs, last-tick time.
+    Withheld by default: fish name/provenance/project, seen_commits/seals/
+    projects — anything that embeds a real project, commit, or seal identity.
+
+    Opt-in public naming: `public_names` maps a project (repo dir name) to a
+    public display label. A fish whose project is in that allow-list gets a
+    `name` field with the label — used only for projects the user has already
+    made public (public GitHub repo or named on their site). Default None =
+    every fish stays anonymous.
     """
+    names = public_names or {}
     w = world.weather
     return {
         "schema": SNAPSHOT_SCHEMA,
         "tick_at": world.last_tick_at.isoformat(),
         "fish_count": len(world.fish),
-        "fish": [
-            {"species": f.species, "glyph": f.glyph, "mood": f.mood, "zone": f.zone}
-            for f in world.fish
-        ],
+        "fish": [_public_fish(f, names) for f in world.fish],
         "weather": {
             "temperature_c": w.temperature_c,
             "current_strength": w.current_strength,

@@ -53,3 +53,9 @@ def test_default_zone_is_mid():
     sp = load_bestiary(p)["x"]
     assert sp.zone == "mid"
     assert sp.social == "solo"
+
+
+def test_crab_loads_with_bottom_zone():
+    species = load_bundled()
+    assert "crab" in species
+    assert species["crab"].zone == "bottom"

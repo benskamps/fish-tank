@@ -66,6 +66,14 @@ def bestiary_path() -> Path:
     return tank_home() / "bestiary.yaml"
 
 
+def config_yaml_path() -> Path:
+    """Optional user config (YAML) at ~/.tank/config.yaml (or $TANK_HOME).
+
+    Holds the observer allow-list and path overrides. See Observer.from_config().
+    """
+    return tank_home() / "config.yaml"
+
+
 def epitaphs_path() -> Path:
     return tank_home() / "epitaphs.yaml"
 

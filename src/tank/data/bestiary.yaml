@@ -190,6 +190,18 @@ witnessfish:
   mood_bias: {calm: 0.9, sleeping: 0.1}
   description: "Spawns when you write notes, plans, or history — a journal entry, a planning doc, a session log. Calm and long-lived; it remembers what you wrote down."
 
+crab:
+  category: bottom_dweller
+  glyph_pool: ["V(°°)V", "(\\°°/)", "v(°°)v"]
+  fossil_glyph: "❍"
+  base_lifespan_days: [30, 120]
+  spawn_trigger: bestiary_roll
+  spawn_weight: 0.12
+  zone: bottom
+  social: solo
+  mood_bias: {calm: 0.7, darting: 0.3}
+  description: "A crab. Scuttles sideways along the bottom, claws raised, scavenging. Unbothered by the politics of the water column."
+
 cleanershrimp:
   category: rare
   glyph_pool: ["°v°", "·v·"]

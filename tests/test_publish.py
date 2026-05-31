@@ -75,6 +75,25 @@ def test_snapshot_is_json_serializable():
     json.loads(json.dumps(to_public_snapshot(_world_with_private_data())))
 
 
+def test_public_names_names_only_allowlisted_fish():
+    world = _world_with_private_data()
+    projects = [f.project for f in world.fish]   # two distinct private projects
+    snap = to_public_snapshot(world, {projects[0]: "My Public App"})
+    named = [f for f in snap["fish"] if "name" in f]
+    assert len(named) == 1
+    assert named[0]["name"] == "My Public App"      # the allow-listed project's label
+    # The non-listed private project is still never named or leaked, and the raw
+    # (allow-listed) project name itself is replaced by the public label.
+    blob = json.dumps(snap)
+    assert projects[1] not in blob
+    assert projects[0] not in blob
+
+
+def test_no_public_names_keeps_everyone_anonymous():
+    snap = to_public_snapshot(_world_with_private_data())
+    assert all("name" not in f for f in snap["fish"])
+
+
 # ── publish() transport ───────────────────────────────────────────
 
 def test_publish_swallows_network_errors(monkeypatch):
