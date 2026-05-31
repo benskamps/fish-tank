@@ -188,7 +188,7 @@ witnessfish:
   zone: mid
   social: solo
   mood_bias: {calm: 0.9, sleeping: 0.1}
-  description: "Spawns when a seal is written. Remembers what was sealed."
+  description: "Spawns when you write notes, plans, or history — a journal entry, a planning doc, a session log. Calm and long-lived; it remembers what you wrote down."
 
 cleanershrimp:
   category: rare
