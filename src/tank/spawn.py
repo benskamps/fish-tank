@@ -101,7 +101,7 @@ def _bestiary_rolls(world: World, sample: HardwareSample, now: dt.datetime,
                 out.append(_make_fish(sp, rng, None, now))
 
     if len(world.fish) < _carrying_capacity(world):
-        if rng.random() < 0.10:
+        if rng.random() < 0.25:
             common = [s for s in species_table.values()
                       if s.spawn_trigger == "bestiary_roll"]
             if common:
@@ -112,7 +112,7 @@ def _bestiary_rolls(world: World, sample: HardwareSample, now: dt.datetime,
 
 
 def _carrying_capacity(world: World) -> int:
-    return 12
+    return 18
 
 
 def _make_fish(sp: Species, rng, event: Event | None,
@@ -139,5 +139,5 @@ def _make_fish(sp: Species, rng, event: Event | None,
     return Fish(
         id=fish_id, name=name, species=sp.key, glyph=glyph,
         born_at=now, lifespan_days=lifespan, provenance=provenance,
-        project=project, mood=mood, last_position=(0, 0),
+        project=project, mood=mood, last_position=(0, 0), zone=sp.zone,
     )

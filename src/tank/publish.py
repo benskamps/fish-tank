@@ -36,7 +36,7 @@ def to_public_snapshot(world: World) -> dict:
         "tick_at": world.last_tick_at.isoformat(),
         "fish_count": len(world.fish),
         "fish": [
-            {"species": f.species, "glyph": f.glyph, "mood": f.mood}
+            {"species": f.species, "glyph": f.glyph, "mood": f.mood, "zone": f.zone}
             for f in world.fish
         ],
         "weather": {

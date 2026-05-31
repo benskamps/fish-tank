@@ -31,3 +31,25 @@ def test_lookup_by_trigger():
     species = load_bundled()
     cold = [s for s in species.values() if s.spawn_trigger == "cold_sustained"]
     assert len(cold) >= 1
+
+
+def test_new_species_present_with_zones():
+    species = load_bundled()
+    for key in ("rummynose", "hatchetfish", "killifish", "pleco", "cleanershrimp"):
+        assert key in species, f"missing species {key}"
+    # habitat zones make the tank feel real: surface vs bottom dwellers
+    assert species["hatchetfish"].zone == "surface"
+    assert species["pleco"].zone == "bottom"
+    assert species["snail"].zone == "bottom"
+    assert species["guppy"].social == "school"
+
+
+def test_default_zone_is_mid():
+    from tank.bestiary import load_bestiary
+    import tempfile
+    import pathlib
+    p = pathlib.Path(tempfile.mkdtemp()) / "bestiary.yaml"
+    p.write_text("x:\n  glyph_pool: ['<o>']\n")
+    sp = load_bestiary(p)["x"]
+    assert sp.zone == "mid"
+    assert sp.social == "solo"

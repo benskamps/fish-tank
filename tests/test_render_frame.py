@@ -61,6 +61,34 @@ def test_plain_style_has_no_ansi_escapes():
     assert "\x1b[" not in out
 
 
+def test_zone_bands_layer_top_to_bottom():
+    from tank.render.frame import _zone_band
+    rows = 12
+    s_lo, s_hi = _zone_band("surface", rows)
+    m_lo, m_hi = _zone_band("mid", rows)
+    b_lo, b_hi = _zone_band("bottom", rows)
+    assert s_lo == 0                 # surface hugs the top
+    assert b_hi == rows              # bottom hugs the silt
+    assert s_hi <= b_lo              # surface band is above the bottom band
+    assert m_lo >= s_lo and m_hi <= b_hi
+
+
+def test_bottom_dweller_renders_below_surface_dweller():
+    w = _empty_world()
+    surf = Fish(id="s", name="hatch", species="hatchetfish", glyph="^v^>",
+                born_at=w.created_at, lifespan_days=10.0, provenance="t",
+                project=None, mood="calm", last_position=(0, 0), zone="surface")
+    bott = Fish(id="b", name="pleco", species="pleco", glyph="<#=>",
+                born_at=w.created_at, lifespan_days=10.0, provenance="t",
+                project=None, mood="calm", last_position=(0, 0), zone="bottom")
+    w.fish = [surf, bott]
+    frame = compose(w, width=56, height=14)
+    rows = frame.fish_layer
+    surf_row = next(i for i, r in enumerate(rows) if "^v^>" in r)
+    bott_row = next(i for i, r in enumerate(rows) if "<#=>" in r)
+    assert surf_row < bott_row  # surface fish above bottom fish
+
+
 def test_mood_line_appears_in_plain():
     w = _empty_world()
     w.weather.mood = "haunted"

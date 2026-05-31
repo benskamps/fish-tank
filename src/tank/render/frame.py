@@ -139,12 +139,28 @@ def _make_water(strength: float, width: int, rows: int,
     return out
 
 
+def _zone_band(zone: str, rows: int) -> tuple[int, int]:
+    """Vertical row band [lo, hi) a fish of this zone swims in.
+
+    surface hugs the top, bottom hugs the silt, mid fills the broad middle.
+    Bands overlap slightly so the tank doesn't look striped."""
+    if rows <= 2:
+        return 0, rows
+    third = max(1, rows // 3)
+    if zone == "surface":
+        return 0, third
+    if zone == "bottom":
+        return rows - third, rows
+    return third - (1 if third > 1 else 0), rows - third + 1  # mid, slight overlap
+
+
 def _make_fish_layer(fish: list[Fish], rows: int, width: int,
                      tick_at: dt.datetime) -> list[str]:
     grid: list[list[str]] = [[" "] * (width - 2) for _ in range(rows)]
     for f in fish:
         rng = seeded("place", f.id, tick_at.isoformat())
-        row = rng.randint(0, rows - 1)
+        lo, hi = _zone_band(getattr(f, "zone", "mid"), rows)
+        row = rng.randint(lo, max(lo, hi - 1))
         col = rng.randint(0, max(0, (width - 2) - len(f.glyph)))
         for i, ch in enumerate(f.glyph):
             if col + i < width - 2:

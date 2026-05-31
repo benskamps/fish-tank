@@ -22,6 +22,8 @@ class Species:
     spawn_weight: float
     mood_bias: dict[str, float]
     description: str
+    zone: str = "mid"       # surface / mid / bottom — vertical habitat
+    social: str = "solo"    # solo / school — schools cluster together
 
 
 _DEFAULTS = {
@@ -33,12 +35,17 @@ _DEFAULTS = {
     "spawn_weight": 1.0,
     "mood_bias": {"calm": 1.0},
     "description": "",
+    "zone": "mid",
+    "social": "solo",
 }
+
+_VALID_ZONES = {"surface", "mid", "bottom"}
 
 
 def _coerce(key: str, raw: dict | None) -> Species:
     merged = {**_DEFAULTS, **(raw or {})}
     lifespan = merged["base_lifespan_days"]
+    zone = merged["zone"] if merged["zone"] in _VALID_ZONES else "mid"
     return Species(
         key=key,
         category=merged["category"],
@@ -49,6 +56,8 @@ def _coerce(key: str, raw: dict | None) -> Species:
         spawn_weight=float(merged["spawn_weight"]),
         mood_bias=dict(merged["mood_bias"]),
         description=merged["description"],
+        zone=zone,
+        social=merged["social"],
     )
 
 

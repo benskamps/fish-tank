@@ -53,7 +53,7 @@ def test_snapshot_leaks_no_private_strings():
 def test_snapshot_has_no_name_provenance_project_keys():
     snap = to_public_snapshot(_world_with_private_data())
     for fish in snap["fish"]:
-        assert set(fish.keys()) <= {"species", "glyph", "mood"}, (
+        assert set(fish.keys()) <= {"species", "glyph", "mood", "zone"}, (
             f"fish entry exposed extra keys: {fish.keys()}"
         )
 
@@ -192,7 +192,7 @@ def test_tick_publishes_only_when_configured(tmp_tank_dir, fixed_now, monkeypatc
     assert url.endswith("/api/tank-push") and tok == "tok123"
     assert "fish_count" in snap and "weather" in snap
     for fish in snap["fish"]:
-        assert set(fish) <= {"species", "glyph", "mood"}
+        assert set(fish) <= {"species", "glyph", "mood", "zone"}
 
     # Gist target set -> gist is PREFERRED over the POST target.
     monkeypatch.setenv("TANK_GIST_ID", "gid42")

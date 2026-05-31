@@ -30,6 +30,7 @@ class Fish:
     project: str | None
     mood: str
     last_position: tuple[int, int]
+    zone: str = "mid"      # vertical habitat: surface / mid / bottom
 
 
 @dataclass

@@ -5,6 +5,8 @@ guppy:
   base_lifespan_days: [7, 30]
   spawn_trigger: bestiary_roll
   spawn_weight: 1.0
+  zone: mid
+  social: school
   mood_bias: {calm: 0.7, darting: 0.2, sleeping: 0.1}
   description: "The default fish. Cheerful, unremarkable, always around."
 
@@ -15,8 +17,46 @@ tetra:
   base_lifespan_days: [10, 40]
   spawn_trigger: bestiary_roll
   spawn_weight: 0.7
+  zone: mid
+  social: school
   mood_bias: {calm: 0.6, darting: 0.3, sleeping: 0.1}
   description: "Small, quick, schooling instinct."
+
+rummynose:
+  category: common
+  glyph_pool: ["=>°)>", "<(°<=", "=>o)>"]
+  fossil_glyph: "‚"
+  base_lifespan_days: [14, 50]
+  spawn_trigger: bestiary_roll
+  spawn_weight: 0.6
+  zone: mid
+  social: school
+  mood_bias: {calm: 0.5, darting: 0.5}
+  description: "Rummy-nose tetra. Its nose flushes red when the water is clean — a living health gauge. Schools tight."
+
+hatchetfish:
+  category: common
+  glyph_pool: ["^v^>", "<^v^"]
+  fossil_glyph: "˄"
+  base_lifespan_days: [7, 25]
+  spawn_trigger: bestiary_roll
+  spawn_weight: 0.3
+  zone: surface
+  social: school
+  mood_bias: {darting: 0.6, calm: 0.4}
+  description: "Marbled hatchetfish. Hangs at the very surface; a notorious jumper. Glides more than swims."
+
+killifish:
+  category: common
+  glyph_pool: ["><≈>", "<≈><"]
+  fossil_glyph: "✶"
+  base_lifespan_days: [3, 12]
+  spawn_trigger: bestiary_roll
+  spawn_weight: 0.25
+  zone: mid
+  social: solo
+  mood_bias: {darting: 0.5, calm: 0.5}
+  description: "Annual killifish. Brief, brilliant bloom — lives fast, leaves eggs in the silt."
 
 snail:
   category: common
@@ -25,8 +65,22 @@ snail:
   base_lifespan_days: [60, 180]
   spawn_trigger: bestiary_roll
   spawn_weight: 0.15
+  zone: bottom
+  social: solo
   mood_bias: {calm: 0.95, sleeping: 0.05}
   description: "Eats silt. Mostly stationary. Outlives most fish."
+
+pleco:
+  category: common
+  glyph_pool: ["<#=>", "<=#>"]
+  fossil_glyph: "▬"
+  base_lifespan_days: [120, 365]
+  spawn_trigger: bestiary_roll
+  spawn_weight: 0.1
+  zone: bottom
+  social: solo
+  mood_bias: {calm: 0.9, sleeping: 0.1}
+  description: "Royal pleco. Armored wood-eater that grazes the substrate. Slow, ancient, unbothered."
 
 coldfin:
   category: weather_cold
@@ -35,6 +89,8 @@ coldfin:
   base_lifespan_days: [14, 60]
   spawn_trigger: cold_sustained
   spawn_weight: 1.0
+  zone: mid
+  social: solo
   mood_bias: {sleeping: 0.4, calm: 0.5, darting: 0.1}
   description: "Thrives when the room is cool. Drifts in after a quiet stretch."
 
@@ -45,6 +101,8 @@ frostneon:
   base_lifespan_days: [7, 30]
   spawn_trigger: cold_sustained
   spawn_weight: 0.2
+  zone: mid
+  social: school
   mood_bias: {calm: 0.6, darting: 0.4}
   description: "Rare cold-water visitor. Faint glow."
 
@@ -55,8 +113,10 @@ thermalwisp:
   base_lifespan_days: [3, 14]
   spawn_trigger: heat_sustained
   spawn_weight: 1.0
+  zone: surface
+  social: solo
   mood_bias: {darting: 0.7, calm: 0.3}
-  description: "Heat-borne. Quick to spawn, quick to go."
+  description: "Heat-borne. Quick to spawn, quick to go. Rides the warm surface layer."
 
 emberlung:
   category: weather_hot
@@ -65,6 +125,8 @@ emberlung:
   base_lifespan_days: [2, 8]
   spawn_trigger: heat_sustained
   spawn_weight: 0.25
+  zone: surface
+  social: solo
   mood_bias: {darting: 0.8, dazed: 0.2}
   description: "Rare hot-water visitor. Breathes the warmth."
 
@@ -75,6 +137,8 @@ crashstrider:
   base_lifespan_days: [1, 5]
   spawn_trigger: kernel_event
   spawn_weight: 1.0
+  zone: mid
+  social: solo
   mood_bias: {darting: 0.5, dazed: 0.5}
   description: "Born of crashes. Short, frantic life."
 
@@ -85,8 +149,10 @@ shipfish:
   base_lifespan_days: [30, 365]
   spawn_trigger: ship_event
   spawn_weight: 1.0
+  zone: mid
+  social: solo
   mood_bias: {calm: 0.6, darting: 0.3, sleeping: 0.1}
-  description: "Born when a project ships. Named after the project."
+  description: "Born when a project ships. Named after the project. Long-lived and proud."
 
 founderfish:
   category: project_born
@@ -95,8 +161,10 @@ founderfish:
   base_lifespan_days: [60, 730]
   spawn_trigger: new_project
   spawn_weight: 1.0
+  zone: mid
+  social: solo
   mood_bias: {calm: 0.8, darting: 0.2}
-  description: "Born when a new project enters ~/projects/. Long-lived."
+  description: "Born when a new project enters the watched directory. Long-lived."
 
 driftfish:
   category: project_born
@@ -105,8 +173,10 @@ driftfish:
   base_lifespan_days: [3, 14]
   spawn_trigger: commit_event
   spawn_weight: 1.0
+  zone: mid
+  social: school
   mood_bias: {calm: 0.5, darting: 0.5}
-  description: "Born from regular commits. Short-lived. Many."
+  description: "Born from regular commits. Short-lived. Schools with its kin."
 
 witnessfish:
   category: seal_born
@@ -115,8 +185,22 @@ witnessfish:
   base_lifespan_days: [14, 90]
   spawn_trigger: seal_event
   spawn_weight: 1.0
+  zone: mid
+  social: solo
   mood_bias: {calm: 0.9, sleeping: 0.1}
   description: "Spawns when a seal is written. Remembers what was sealed."
+
+cleanershrimp:
+  category: rare
+  glyph_pool: ["°v°", "·v·"]
+  fossil_glyph: "❋"
+  base_lifespan_days: [20, 90]
+  spawn_trigger: bestiary_roll
+  spawn_weight: 0.05
+  zone: bottom
+  social: solo
+  mood_bias: {calm: 0.8, darting: 0.2}
+  description: "Cleaner shrimp. Rare. Tends the reef, picks the substrate clean. A small good omen."
 
 night-fish:
   category: nocturnal
@@ -125,5 +209,7 @@ night-fish:
   base_lifespan_days: [1, 2]
   spawn_trigger: witching
   spawn_weight: 1.0
+  zone: surface
+  social: solo
   mood_bias: {sleeping: 0.5, calm: 0.3, darting: 0.2}
   description: "Only surfaces in the witching hour (00:00-03:00). Submerges at dawn — never quite seen in daylight. It knows when you're up too late."

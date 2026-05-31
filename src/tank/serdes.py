@@ -52,6 +52,7 @@ def _fish_from_dict(d: dict) -> Fish:
         mood=d["mood"],
         last_position=d["last_position"] if isinstance(d["last_position"], tuple)
                        else tuple(d["last_position"]),
+        zone=d.get("zone", "mid"),
     )
 
 
