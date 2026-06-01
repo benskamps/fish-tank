@@ -1,5 +1,24 @@
 # fish-tank
 
+```text
+┌──────────────────────────────────────────────────────┐
+│  ◕ tank: 9 fish    42°C                              │
+│ ~~    ~  ~  ~~~~~~ ~ ~~   ~~~   ~      ~~  ~~ ~      │
+│~~~~~~~~ ~ ~ ~~ ~    ~~~~~~~ ~  ~ ~       ~~ ~ ~ ~  ~ │
+│~   ~ ~   ~ ~ ~~   ~~  ~ ~ ~~~~  ~   ~ ~  ~ ~~ ~ ~   ~│
+│                                      <^v^            │
+│         >°))<                            =>o)>       │
+│<°))>                              <≈><       >o))<   │
+│ <·><                                                 │
+│                  >°))<    =>°)>                      │
+│                                                      │
+│▒▒▓▒▓▒▓▒▒▓▒▓▓▓▒▒▒▒▒▓▓▓▓▒▒▓▒▓▒▒▒▒▒▓▒▓▓▒▓▓▓▓▒▓▒▓▒▒▓▓▒▒▒▒│
+│                                                      │
+└──────────────────────────────────────────────────────┘
+  the tank feels: calm
+ dusk · temp 41.9°C · current 0.10 · silt 0.82 · light 0.60 · 9 fish
+```
+
 A terminal aquarium fed by your real machine. Fish are born from your work and your hardware: a commit drifts a new fish in, a release ships a long-lived one, a brand-new project founds another, and writing notes, plans, or history spawns a quiet one that remembers. The weather tracks your CPU and GPU — the water runs cold when the room is idle, warm when it's working hard. Day and night follow your local clock, and a night-fish surfaces only in the small hours after midnight. There's no upkeep loop and nothing to feed: you can visit, name a fish, and otherwise let it run for months while state quietly accumulates.
 
 ## Quickstart
