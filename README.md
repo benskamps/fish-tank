@@ -80,7 +80,7 @@ Environment variables override the config file (handy for one-off runs and CI):
 tank                 # peek at the tank
 tank --line          # one-line summary (statusline-friendly)
 tank live            # ambient pane, Ctrl+C to quit
-tank serve           # localhost HTTP at http://127.0.0.1:7311/tank
+tank serve           # animated localhost aquarium at http://127.0.0.1:7311/tank
 tank status          # diagnostics (fish count, last tick, weather, fossils)
 
 tank adopt <name>    # add a fish manually (--species to pick one)
@@ -105,7 +105,9 @@ tank uninstall       # remove the scheduled task
 
 ## Live demo
 
-There's a living example of the author's own tank at **brokenbranch.dev/aquarium**.
+`tank serve` gives you a live animated aquarium of your own machine's tank — fish
+swim and face the way they're going, with a gentle tail wiggle. There's a fuller
+example of the author's own tank at **brokenbranch.dev/aquarium**.
 
 ---
 
