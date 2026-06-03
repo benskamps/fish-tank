@@ -77,7 +77,7 @@ def world_from_json(blob: str) -> World:
     raw = _decode(json.loads(blob))
     fish = [_fish_from_dict(f) for f in raw["fish"]]
     weather = _weather_from_dict(raw["weather"])
-    seen_seals = raw["seen_seals"]
+    seen_notes = raw["seen_notes"]
     seen_projects = raw["seen_projects"]
     return World(
         schema_version=raw["schema_version"],
@@ -86,7 +86,7 @@ def world_from_json(blob: str) -> World:
         fish=fish,
         weather=weather,
         seen_commits=dict(raw["seen_commits"]),
-        seen_seals=seen_seals if isinstance(seen_seals, set) else set(seen_seals),
+        seen_notes=seen_notes if isinstance(seen_notes, set) else set(seen_notes),
         seen_projects=seen_projects if isinstance(seen_projects, set) else set(seen_projects),
         config_overrides=dict(raw.get("config_overrides", {})),
     )

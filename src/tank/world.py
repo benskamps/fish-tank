@@ -98,7 +98,7 @@ class WorldStore:
                 fossil_layer=[],
             ),
             seen_commits={},
-            seen_seals=set(),
+            seen_notes=set(),
             seen_projects=set(),
             config_overrides={},
         )

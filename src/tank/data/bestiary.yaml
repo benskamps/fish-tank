@@ -178,12 +178,12 @@ driftfish:
   mood_bias: {calm: 0.5, darting: 0.5}
   description: "Born from regular commits. Short-lived. Schools with its kin."
 
-witnessfish:
-  category: seal_born
+notefish:
+  category: note_born
   glyph_pool: ["<°)W><"]
   fossil_glyph: "◇"
   base_lifespan_days: [14, 90]
-  spawn_trigger: seal_event
+  spawn_trigger: note_event
   spawn_weight: 1.0
   zone: mid
   social: solo

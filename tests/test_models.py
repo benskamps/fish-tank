@@ -32,7 +32,7 @@ def make_world(now: dt.datetime) -> World:
             fossil_layer=["·", "✦"],
         ),
         seen_commits={"~/projects/my-app": "abc"},
-        seen_seals={"2026-05-13-seal.md"},
+        seen_notes={"2026-05-13-note.md"},
         seen_projects={"my-app", "demo-site"},
         config_overrides={},
     )

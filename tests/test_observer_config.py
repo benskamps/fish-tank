@@ -16,7 +16,7 @@ def _make_world(now):
         fish=[],
         weather=Weather(20.0, 0.0, 0.0, 0.5, 0.0, []),
         seen_commits={},
-        seen_seals=set(),
+        seen_notes=set(),
         seen_projects=set(),
         config_overrides={},
     )
@@ -46,7 +46,7 @@ def test_watch_list_includes_only_listed_repos(tmp_path, fixed_now):
     for name in ("keep-me", "skip-me", "also-keep"):
         (root / name).mkdir(parents=True)
     world = _make_world(fixed_now)
-    obs = Observer(projects_root=root, seals_dir=tmp_path / "no_seals",
+    obs = Observer(projects_root=root, notes_dir=tmp_path / "no_notes",
                    watch=["keep-me", "also-keep"])
     obs.scan_since(world.last_tick_at, world)
     assert "keep-me" in world.seen_projects
@@ -66,7 +66,7 @@ def test_watch_list_filters_git_scan(tmp_path, fixed_now):
     _commit(ignored, "init")
 
     world = _make_world(fixed_now)
-    obs = Observer(projects_root=root, seals_dir=tmp_path / "no_seals",
+    obs = Observer(projects_root=root, notes_dir=tmp_path / "no_notes",
                    watch=["watched"])
     obs.scan_since(world.last_tick_at, world)  # baseline
     # only the watched repo should have been baselined in seen_commits
@@ -86,7 +86,7 @@ def test_empty_watch_scans_all(tmp_path, fixed_now):
     for name in ("a", "b", "c"):
         (root / name).mkdir(parents=True)
     world = _make_world(fixed_now)
-    obs = Observer(projects_root=root, seals_dir=tmp_path / "no_seals", watch=[])
+    obs = Observer(projects_root=root, notes_dir=tmp_path / "no_notes", watch=[])
     obs.scan_since(world.last_tick_at, world)
     assert {"a", "b", "c"} <= world.seen_projects
 
@@ -96,7 +96,7 @@ def test_none_watch_scans_all(tmp_path, fixed_now):
     for name in ("a", "b"):
         (root / name).mkdir(parents=True)
     world = _make_world(fixed_now)
-    obs = Observer(projects_root=root, seals_dir=tmp_path / "no_seals", watch=None)
+    obs = Observer(projects_root=root, notes_dir=tmp_path / "no_notes", watch=None)
     obs.scan_since(world.last_tick_at, world)
     assert {"a", "b"} <= world.seen_projects
 
@@ -123,7 +123,7 @@ def test_cap_scans_only_newest_and_logs_skip_count(tmp_path, fixed_now, caplog):
             newest_names.add(d.name)
 
     world = _make_world(fixed_now)
-    obs = Observer(projects_root=root, seals_dir=tmp_path / "no_seals")
+    obs = Observer(projects_root=root, notes_dir=tmp_path / "no_notes")
     with caplog.at_level(logging.WARNING, logger="tank.observer"):
         obs.scan_since(world.last_tick_at, world)
 
@@ -138,7 +138,7 @@ def test_under_cap_does_not_warn(tmp_path, fixed_now, caplog):
     for i in range(5):
         (root / f"r{i}").mkdir(parents=True)
     world = _make_world(fixed_now)
-    obs = Observer(projects_root=root, seals_dir=tmp_path / "no_seals")
+    obs = Observer(projects_root=root, notes_dir=tmp_path / "no_notes")
     with caplog.at_level(logging.WARNING, logger="tank.observer"):
         obs.scan_since(world.last_tick_at, world)
     assert not any("skipping" in rec.getMessage() for rec in caplog.records)
@@ -157,7 +157,7 @@ def test_config_file_watch_is_honored(tmp_tank_dir, tmp_path, monkeypatch):
     root = tmp_path / "code"
     monkeypatch.delenv("TANK_WATCH", raising=False)
     monkeypatch.setenv("TANK_PROJECTS_ROOT", str(root))
-    monkeypatch.setenv("TANK_SEALS_DIR", str(tmp_path / "no_seals"))
+    monkeypatch.setenv("TANK_NOTES_DIR", str(tmp_path / "no_notes"))
     _write_config(tmp_tank_dir, 'observer:\n  watch: ["my-app", "my-lib"]\n')
     obs = Observer.from_config()
     assert obs.watch == {"my-app", "my-lib"}
@@ -165,7 +165,7 @@ def test_config_file_watch_is_honored(tmp_tank_dir, tmp_path, monkeypatch):
 
 def test_env_watch_overrides_file(tmp_tank_dir, tmp_path, monkeypatch):
     monkeypatch.setenv("TANK_PROJECTS_ROOT", str(tmp_path / "code"))
-    monkeypatch.setenv("TANK_SEALS_DIR", str(tmp_path / "no_seals"))
+    monkeypatch.setenv("TANK_NOTES_DIR", str(tmp_path / "no_notes"))
     _write_config(tmp_tank_dir, 'observer:\n  watch: ["from-file"]\n')
     monkeypatch.setenv("TANK_WATCH", "from-env-a, from-env-b")
     obs = Observer.from_config()
@@ -175,24 +175,24 @@ def test_env_watch_overrides_file(tmp_tank_dir, tmp_path, monkeypatch):
 def test_config_file_paths_with_tilde_expand(tmp_tank_dir, monkeypatch):
     # Ensure file values (not env) are used, then check ~ expansion.
     monkeypatch.delenv("TANK_PROJECTS_ROOT", raising=False)
-    monkeypatch.delenv("TANK_SEALS_DIR", raising=False)
+    monkeypatch.delenv("TANK_NOTES_DIR", raising=False)
     monkeypatch.delenv("TANK_WATCH", raising=False)
     _write_config(
         tmp_tank_dir,
         'observer:\n'
         '  projects_root: "~/code"\n'
-        '  seals_dir: "~/notes"\n',
+        '  notes_dir: "~/notes"\n',
     )
     obs = Observer.from_config()
     home = Path.home()
     assert obs.projects_root == home / "code"
-    assert obs.seals_dir == home / "notes"
+    assert obs.notes_dir == home / "notes"
 
 
 def test_env_projects_root_overrides_file(tmp_tank_dir, tmp_path, monkeypatch):
     monkeypatch.delenv("TANK_WATCH", raising=False)
     monkeypatch.setenv("TANK_PROJECTS_ROOT", str(tmp_path / "env-root"))
-    monkeypatch.delenv("TANK_SEALS_DIR", raising=False)
+    monkeypatch.delenv("TANK_NOTES_DIR", raising=False)
     _write_config(tmp_tank_dir, 'observer:\n  projects_root: "~/file-root"\n')
     obs = Observer.from_config()
     assert obs.projects_root == tmp_path / "env-root"
@@ -200,7 +200,7 @@ def test_env_projects_root_overrides_file(tmp_tank_dir, tmp_path, monkeypatch):
 
 def test_from_config_no_file_no_env_uses_defaults(tmp_tank_dir, monkeypatch):
     monkeypatch.delenv("TANK_PROJECTS_ROOT", raising=False)
-    monkeypatch.delenv("TANK_SEALS_DIR", raising=False)
+    monkeypatch.delenv("TANK_NOTES_DIR", raising=False)
     monkeypatch.delenv("TANK_WATCH", raising=False)
     obs = Observer.from_config()
     home = Path.home()

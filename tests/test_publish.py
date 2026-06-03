@@ -1,7 +1,7 @@
 """Publish: the sanitizer is the trust boundary for the public web snapshot.
 
 The leak test is the load-bearing one — it constructs a world full of private
-strings (project-derived fish names, provenance, seen_commits/seals/projects)
+strings (project-derived fish names, provenance, seen_commits/notes/projects)
 and asserts NONE of them survive into the serialized public snapshot.
 """
 from __future__ import annotations
@@ -31,7 +31,7 @@ def _world_with_private_data() -> World:
         weather=Weather(28.0, 0.3, 0.4, 0.2, 0.5, ["◇", "✦"],
                         phase="witching", mood="haunted"),
         seen_commits={"~/projects/client-alpha": "deadbeefcafe"},
-        seen_seals={"2026-05-29-private-thing-seal.md"},
+        seen_notes={"2026-05-29-private-thing-note.md"},
         seen_projects={"client-alpha", "my-secret-app", "confidential-thing"},
     )
 
@@ -39,7 +39,7 @@ def _world_with_private_data() -> World:
 PRIVATE_STRINGS = [
     "my-secret-app", "client-alpha", "deadbeef", "private-thing",
     "founderfish-", "shipfish-", "confidential", "provenance", "seen_commits",
-    "seen_seals", "seen_projects", "event:ship", "2026-05-29-private",
+    "seen_notes", "seen_projects", "event:ship", "2026-05-29-private",
 ]
 
 

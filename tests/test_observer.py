@@ -13,7 +13,7 @@ def _make_world(now):
         fish=[],
         weather=Weather(20.0, 0.0, 0.0, 0.5, 0.0, []),
         seen_commits={},
-        seen_seals=set(),
+        seen_notes=set(),
         seen_projects=set(),
         config_overrides={},
     )
@@ -42,7 +42,7 @@ def test_observer_picks_up_new_commit(tmp_path, fixed_now):
 
     world = _make_world(fixed_now)
     obs = Observer(projects_root=tmp_path / "projects",
-                   seals_dir=tmp_path / "seals_doesntexist")
+                   notes_dir=tmp_path / "notes_doesntexist")
     # First scan baselines the repo (new_project fires, but no historical commits).
     first = obs.scan_since(world.last_tick_at, world)
     assert "new_project" in [e.kind for e in first]
@@ -63,7 +63,7 @@ def test_first_scan_does_not_dump_commit_history(tmp_path, fixed_now):
 
     world = _make_world(fixed_now)
     obs = Observer(projects_root=tmp_path / "projects",
-                   seals_dir=tmp_path / "seals_doesntexist")
+                   notes_dir=tmp_path / "notes_doesntexist")
     events = obs.scan_since(world.last_tick_at, world)
     assert [e for e in events if e.kind in ("commit", "ship")] == []
     assert world.seen_commits.get(str(proj))  # but HEAD is baselined
@@ -77,7 +77,7 @@ def test_observer_dedups_already_seen_commits(tmp_path, fixed_now):
 
     world = _make_world(fixed_now)
     obs = Observer(projects_root=tmp_path / "projects",
-                   seals_dir=tmp_path / "seals_doesntexist")
+                   notes_dir=tmp_path / "notes_doesntexist")
     obs.scan_since(world.last_tick_at, world)
     events_again = obs.scan_since(world.last_tick_at, world)
     assert [e for e in events_again if e.kind == "commit"] == []
@@ -91,44 +91,44 @@ def test_observer_promotes_ship_commit(tmp_path, fixed_now):
 
     world = _make_world(fixed_now)
     obs = Observer(projects_root=tmp_path / "projects",
-                   seals_dir=tmp_path / "seals_doesntexist")
+                   notes_dir=tmp_path / "notes_doesntexist")
     obs.scan_since(world.last_tick_at, world)  # baseline the repo
     _commit(proj, "ship v0.1.0")
     events = obs.scan_since(world.last_tick_at, world)
     assert any(e.kind == "ship" for e in events)
 
 
-def test_pre_existing_projects_and_seals_are_baselined(tmp_path):
+def test_pre_existing_projects_and_notes_are_baselined(tmp_path):
     """Items that pre-date the tank's creation are baselined silently — no
-    founderfish per existing repo, no witnessfish per existing seal."""
+    founderfish per existing repo, no notefish per existing note."""
     import datetime as dt
     future = dt.datetime(2099, 1, 1, tzinfo=dt.timezone.utc)
     proj = tmp_path / "projects" / "old"
     proj.mkdir(parents=True)
     _init_repo(proj)
     _commit(proj, "history")
-    seals = tmp_path / "seals"
-    seals.mkdir()
-    (seals / "old-seal.md").write_text("# old")
+    notes = tmp_path / "notes"
+    notes.mkdir()
+    (notes / "old-note.md").write_text("# old")
 
     world = _make_world(future)  # tank "created" far in the future of these files
-    obs = Observer(projects_root=tmp_path / "projects", seals_dir=seals)
+    obs = Observer(projects_root=tmp_path / "projects", notes_dir=notes)
     events = obs.scan_since(world.last_tick_at, world)
     assert events == []  # all pre-existing -> baselined, nothing spawns
     assert "old" in world.seen_projects
-    assert "old-seal.md" in world.seen_seals
+    assert "old-note.md" in world.seen_notes
 
 
-def test_observer_picks_up_new_seal(tmp_path, fixed_now):
-    seals = tmp_path / "seals"
-    seals.mkdir()
-    (seals / "2026-05-14-test.md").write_text("# test seal")
+def test_observer_picks_up_new_note(tmp_path, fixed_now):
+    notes = tmp_path / "notes"
+    notes.mkdir()
+    (notes / "2026-05-14-test.md").write_text("# test note")
 
     world = _make_world(fixed_now)
     obs = Observer(projects_root=tmp_path / "no_projects",
-                   seals_dir=seals)
+                   notes_dir=notes)
     events = obs.scan_since(world.last_tick_at, world)
-    assert any(e.kind == "seal_written" for e in events)
+    assert any(e.kind == "note_written" for e in events)
 
 
 def test_observer_skips_corrupt_git_project(tmp_path, fixed_now):
@@ -137,6 +137,6 @@ def test_observer_skips_corrupt_git_project(tmp_path, fixed_now):
     (bad / ".git").mkdir()
     world = _make_world(fixed_now)
     obs = Observer(projects_root=tmp_path / "projects",
-                   seals_dir=tmp_path / "no_seals")
+                   notes_dir=tmp_path / "no_notes")
     events = obs.scan_since(world.last_tick_at, world)
     assert any(e.kind == "new_project" for e in events)

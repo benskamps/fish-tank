@@ -1,7 +1,7 @@
 """Publish a sanitized, public-safe snapshot of the tank to a remote endpoint.
 
 This module is the trust boundary between the local tank (which knows your
-project names, commit hashes, and seal filenames) and any public surface. The
+project names, commit hashes, and note filenames) and any public surface. The
 snapshot is built by ALLOW-LIST: we construct a fresh dict of named safe fields,
 so a field added to World later cannot leak by default — it simply won't be
 copied. Everything name/provenance/project/history-shaped is left behind.
@@ -37,8 +37,8 @@ def to_public_snapshot(world: World, public_names: dict | None = None) -> dict:
 
     Safe (rendered on the page): per-fish species/glyph/mood/zone, weather +
     phase + mood, fish count, fossil glyphs, last-tick time.
-    Withheld by default: fish name/provenance/project, seen_commits/seals/
-    projects — anything that embeds a real project, commit, or seal identity.
+    Withheld by default: fish name/provenance/project, seen_commits/notes/
+    projects — anything that embeds a real project, commit, or note identity.
 
     Opt-in public naming: `public_names` maps a project (repo dir name) to a
     public display label. A fish whose project is in that allow-list gets a

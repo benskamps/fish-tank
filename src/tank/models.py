@@ -73,6 +73,6 @@ class World:
     fish: list[Fish]
     weather: Weather
     seen_commits: dict[str, str]
-    seen_seals: set[str]
+    seen_notes: set[str]
     seen_projects: set[str]
     config_overrides: dict = field(default_factory=dict)

@@ -11,7 +11,7 @@ def _world(now):
         created_at=now, last_tick_at=now,
         fish=[],
         weather=Weather(40.0, 0.0, 0.0, 0.5, 0.0, []),
-        seen_commits={}, seen_seals=set(), seen_projects=set(),
+        seen_commits={}, seen_notes=set(), seen_projects=set(),
         config_overrides={},
     )
 
@@ -44,12 +44,12 @@ def test_new_project_event_spawns_founderfish(fixed_now):
     assert any(f.species == "founderfish" for f in births)
 
 
-def test_seal_event_spawns_witnessfish(fixed_now):
+def test_note_event_spawns_notefish(fixed_now):
     species = load_bundled()
-    events = [Event(kind="seal_written", project=None,
-                    detail="2026-05-14-seal.md", at=fixed_now)]
+    events = [Event(kind="note_written", project=None,
+                    detail="2026-05-14-note.md", at=fixed_now)]
     births = spawn_run(_world(fixed_now), events, _sample(), fixed_now, species)
-    assert any(f.species == "witnessfish" for f in births)
+    assert any(f.species == "notefish" for f in births)
 
 
 def test_cold_sustained_triggers_coldfin(fixed_now):

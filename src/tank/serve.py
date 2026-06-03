@@ -158,7 +158,7 @@ _JS = r"""
     coldfin: 30, frostneon: 28, 'night-fish': 24,
     guppy: 22, tetra: 20, rummynose: 21, driftfish: 20
   };
-  var ANCHOR = { shipfish: 1, founderfish: 1, witnessfish: 1 };
+  var ANCHOR = { shipfish: 1, founderfish: 1, notefish: 1 };
   var PH = { dawn: '#1b1712', day: '#12161a', dusk: '#1a130e', night: '#0a0a0b', witching: '#140b1a' };
 
   var ents = [], sig = null, raf = null, last = 0;

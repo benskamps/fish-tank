@@ -12,7 +12,7 @@ from tank.rng import seeded
 EVENT_TO_TRIGGER = {
     "ship": "ship_event",
     "new_project": "new_project",
-    "seal_written": "seal_event",
+    "note_written": "note_event",
     "commit": "commit_event",
     "kernel_error": "kernel_event",
 }

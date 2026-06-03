@@ -1,6 +1,6 @@
-"""Scans real-world surfaces for events: git commits, seals, new projects.
+"""Scans real-world surfaces for events: git commits, notes, new projects.
 
-This is the ONLY module that reads the projects tree and the seals dir, so it
+This is the ONLY module that reads the projects tree and the notes dir, so it
 is also the single place that resolves observer configuration (allow-list +
 path overrides). Config precedence: ~/.tank/config.yaml < environment vars.
 """
@@ -42,20 +42,20 @@ class Observer:
     def __init__(
         self,
         projects_root: Path | None = None,
-        seals_dir: Path | None = None,
+        notes_dir: Path | None = None,
         watch: list[str] | None = None,
     ):
         home = Path.home()
         env_projects = os.environ.get("TANK_PROJECTS_ROOT")
-        env_seals = os.environ.get("TANK_SEALS_DIR")
+        env_notes = os.environ.get("TANK_NOTES_DIR")
         self.projects_root = projects_root or (
             Path(env_projects) if env_projects else (home / "projects")
         )
-        # "Seals" are optional notes/plans/journal markdown files — point
-        # TANK_SEALS_DIR (or config observer.seals_dir) at your own dir to feed
-        # witnessfish. Defaults to ~/seals; if it doesn't exist, scanning no-ops.
-        self.seals_dir = seals_dir or (
-            Path(env_seals) if env_seals else (home / "seals")
+        # The notes dir holds optional notes/plans/journal markdown files —
+        # point TANK_NOTES_DIR (or config observer.notes_dir) at your own dir to
+        # feed notefish. Defaults to ~/notes; if it doesn't exist, scanning no-ops.
+        self.notes_dir = notes_dir or (
+            Path(env_notes) if env_notes else (home / "notes")
         )
         # Normalize the allow-list to a set of dir names; empty/None => watch all.
         self.watch: set[str] = {w for w in (watch or []) if w}
@@ -69,16 +69,16 @@ class Observer:
             observer:
               projects_root: "~/code"        # optional, default ~/projects
               watch: ["my-app", "my-lib"]    # optional allow-list of dir names
-              seals_dir: "~/notes"           # optional, default ~/seals tree
+              notes_dir: "~/notes"           # optional, default ~/notes tree
 
-        Environment overrides: TANK_PROJECTS_ROOT, TANK_SEALS_DIR, and
+        Environment overrides: TANK_PROJECTS_ROOT, TANK_NOTES_DIR, and
         TANK_WATCH (comma-separated names). ``~`` is expanded in path values.
         """
         cfg = cls._load_config()
         projects_root = _expand(os.environ.get("TANK_PROJECTS_ROOT")) or \
             _expand(cfg.get("projects_root"))
-        seals_dir = _expand(os.environ.get("TANK_SEALS_DIR")) or \
-            _expand(cfg.get("seals_dir"))
+        notes_dir = _expand(os.environ.get("TANK_NOTES_DIR")) or \
+            _expand(cfg.get("notes_dir"))
 
         env_watch = os.environ.get("TANK_WATCH")
         if env_watch is not None:
@@ -87,7 +87,7 @@ class Observer:
             raw_watch = cfg.get("watch") or []
             watch = [str(w).strip() for w in raw_watch if str(w).strip()]
 
-        return cls(projects_root=projects_root, seals_dir=seals_dir, watch=watch)
+        return cls(projects_root=projects_root, notes_dir=notes_dir, watch=watch)
 
     @staticmethod
     def _load_config() -> dict:
@@ -136,7 +136,7 @@ class Observer:
         candidates = self._candidate_dirs()
         events.extend(self._scan_projects(candidates, world))
         events.extend(self._scan_git(candidates, world))
-        events.extend(self._scan_seals(world))
+        events.extend(self._scan_notes(world))
         return events
 
     def _scan_projects(self, candidates: list[Path], world: World) -> list[Event]:
@@ -206,22 +206,22 @@ class Observer:
             world.seen_commits[key] = head
         return out
 
-    def _scan_seals(self, world: World) -> list[Event]:
+    def _scan_notes(self, world: World) -> list[Event]:
         out: list[Event] = []
-        if not self.seals_dir.exists():
+        if not self.notes_dir.exists():
             return out
-        for seal in self.seals_dir.iterdir():
-            if not seal.is_file():
+        for note in self.notes_dir.iterdir():
+            if not note.is_file():
                 continue
-            if seal.name in world.seen_seals:
+            if note.name in world.seen_notes:
                 continue
-            world.seen_seals.add(seal.name)
+            world.seen_notes.add(note.name)
             mtime = dt.datetime.fromtimestamp(
-                seal.stat().st_mtime, tz=dt.timezone.utc
+                note.stat().st_mtime, tz=dt.timezone.utc
             )
-            # Baseline pre-existing seals silently; only seals written after the
-            # tank started watching spawn a witnessfish.
+            # Baseline pre-existing notes silently; only notes written after the
+            # tank started watching spawn a notefish.
             if mtime >= world.created_at:
-                out.append(Event(kind="seal_written", project=None,
-                                 detail=seal.name, at=mtime))
+                out.append(Event(kind="note_written", project=None,
+                                 detail=note.name, at=mtime))
         return out

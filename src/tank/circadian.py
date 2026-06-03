@@ -1,7 +1,7 @@
 """Circadian rhythm — maps local wall-clock time to a day/night phase.
 
 The tank's clock is UTC-aware (see clock.py); this module converts to the
-machine's *local* time so the tank's day matches Ben's day. Naive datetimes are
+machine's *local* time so the tank's day matches your day. Naive datetimes are
 treated as local wall time, which keeps tests stable on any machine.
 """
 from __future__ import annotations

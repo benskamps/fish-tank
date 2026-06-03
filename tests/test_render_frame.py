@@ -12,7 +12,7 @@ def _empty_world():
     return World(
         schema_version=1, created_at=now, last_tick_at=now, fish=[],
         weather=Weather(22.0, 0.2, 0.1, 0.7, 0.1, []),
-        seen_commits={}, seen_seals=set(), seen_projects=set(),
+        seen_commits={}, seen_notes=set(), seen_projects=set(),
         config_overrides={},
     )
 

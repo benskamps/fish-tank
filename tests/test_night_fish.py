@@ -15,7 +15,7 @@ def _world(fish=None, created="2026-01-01T00:00:00+00:00"):
         last_tick_at=dt.datetime.fromisoformat(created),
         fish=fish or [],
         weather=Weather(22.0, 0.0, 0.0, 0.5, 0.0, []),
-        seen_commits={}, seen_seals=set(), seen_projects=set(),
+        seen_commits={}, seen_notes=set(), seen_projects=set(),
     )
 
 

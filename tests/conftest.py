@@ -17,7 +17,7 @@ def tmp_tank_dir(tmp_path, monkeypatch):
     tank_dir.mkdir()
     monkeypatch.setenv("TANK_HOME", str(tank_dir))
     monkeypatch.setenv("TANK_PROJECTS_ROOT", str(tmp_path / "no_projects"))
-    monkeypatch.setenv("TANK_SEALS_DIR", str(tmp_path / "no_seals"))
+    monkeypatch.setenv("TANK_NOTES_DIR", str(tmp_path / "no_notes"))
     return tank_dir
 
 

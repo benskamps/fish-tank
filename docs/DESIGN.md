@@ -44,8 +44,8 @@ pool, a lifespan range, a spawn trigger, and a mood bias. Some are born from rea
 in your work, some from sustained machine conditions:
 
 - **Event-born** — a *ship* spawns a long-lived shipfish named after the project; a new
-  project spawns a founderfish; commits spawn short-lived driftfish; optional session
-  "seals" (journal files) spawn witnessfish.
+  project spawns a founderfish; commits spawn short-lived driftfish; optional
+  "notes" (journal/plan files) spawn notefish.
 - **Weather-born** — sustained cold spawns cold-water species; sustained GPU heat spawns
   heat species.
 - **Bestiary rolls** — ordinary residents drift in to fill the tank.

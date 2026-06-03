@@ -14,7 +14,7 @@ def _fresh_world(now: dt.datetime) -> World:
         fish=[],
         weather=Weather(20.0, 0.0, 0.0, 0.5, 0.0, []),
         seen_commits={},
-        seen_seals=set(),
+        seen_notes=set(),
         seen_projects=set(),
         config_overrides={},
     )
