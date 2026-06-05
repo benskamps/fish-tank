@@ -6,6 +6,7 @@ import datetime as dt
 import logging
 import os
 import time
+import traceback
 
 from tank import paths
 from tank.models import Weather, World
@@ -33,6 +34,14 @@ class WorldStore:
             ts = dt.datetime.now().strftime("%Y%m%dT%H%M%S")
             broken = path.with_name(f"world.json.broken-{ts}")
             path.rename(broken)
+            # The tick runs headless (pythonw) — if we don't leave the reason
+            # on disk next to the quarantined world, the failure is invisible
+            # and the tank just looks mysteriously empty.
+            with contextlib.suppress(Exception):
+                broken.with_name(broken.name + ".why.txt").write_text(
+                    traceback.format_exc(), encoding="utf-8")
+            logger.exception("world.json failed to load; quarantined to %s",
+                             broken.name)
             return self._fresh(now)
 
     def save(self, world: World) -> None:

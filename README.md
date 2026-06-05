@@ -48,12 +48,12 @@ Create `~/.tank/config.yaml`:
 observer:
   projects_root: "~/code"          # optional — where your repos live (default: ~/projects)
   watch: ["my-app", "my-lib"]      # optional — ONLY these repo folder names feed the tank
-  seals_dir: "~/notes"             # optional — your notes/journal/plans dir (default: ~/seals)
+  notes_dir: "~/notes"             # optional — your notes/journal/plans dir (default: ~/notes)
 ```
 
 - **`watch` — the allow-list (start here).** By default the tank scans every repo under `projects_root`. List the folder *names* you actually want to watch and it ignores the rest. If you leave `watch` out, the tank scans everything — but as a safety valve it will never silently scan more than 50 directories; above that it scans the 50 most-recently-modified and logs exactly how many it skipped, so you know to set a `watch` list.
 - **`projects_root`** — the folder your repos live under. Defaults to `~/projects`.
-- **`seals_dir`** — your "seals" directory. **"Seals" just means your notes / journal / planning markdown** — session logs, design docs, daily notes, whatever you keep. A new file here spawns a calm, long-lived fish that "remembers what you wrote down." Point it anywhere you keep that kind of writing.
+- **`notes_dir`** — your notes directory: session logs, design docs, plans, daily notes, whatever journal-shaped markdown you keep. A new file here spawns a calm, long-lived fish that "remembers what you wrote down." Point it anywhere you keep that kind of writing. (The pre-0.6 name `seals_dir` still works as a deprecated alias.)
 
 `~` is expanded in any path value.
 
@@ -64,7 +64,7 @@ Environment variables override the config file (handy for one-off runs and CI):
 | Variable | Overrides | Format |
 |---|---|---|
 | `TANK_PROJECTS_ROOT` | `observer.projects_root` | a path |
-| `TANK_SEALS_DIR` | `observer.seals_dir` | a path |
+| `TANK_NOTES_DIR` | `observer.notes_dir` | a path (`TANK_SEALS_DIR` is a deprecated alias) |
 | `TANK_WATCH` | `observer.watch` | comma-separated names, e.g. `my-app,my-lib` |
 | `TANK_HOME` | where state lives (default `~/.tank/`) | a path |
 

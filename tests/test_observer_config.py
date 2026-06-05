@@ -206,3 +206,36 @@ def test_from_config_no_file_no_env_uses_defaults(tmp_tank_dir, monkeypatch):
     home = Path.home()
     assert obs.projects_root == home / "projects"
     assert obs.watch == set()
+
+
+# ---------------------------------------------------------------------------
+# deprecated pre-0.6.x aliases (seals_dir / TANK_SEALS_DIR)
+# ---------------------------------------------------------------------------
+
+def test_legacy_env_seals_dir_is_honored(tmp_tank_dir, tmp_path, monkeypatch):
+    monkeypatch.delenv("TANK_NOTES_DIR", raising=False)
+    monkeypatch.delenv("TANK_WATCH", raising=False)
+    monkeypatch.setenv("TANK_SEALS_DIR", str(tmp_path / "legacy-seals"))
+    obs = Observer.from_config()
+    assert obs.notes_dir == tmp_path / "legacy-seals"
+
+
+def test_legacy_config_seals_dir_is_honored(tmp_tank_dir, monkeypatch):
+    monkeypatch.delenv("TANK_NOTES_DIR", raising=False)
+    monkeypatch.delenv("TANK_SEALS_DIR", raising=False)
+    monkeypatch.delenv("TANK_WATCH", raising=False)
+    _write_config(tmp_tank_dir, 'observer:\n  seals_dir: "~/legacy-seals"\n')
+    obs = Observer.from_config()
+    assert obs.notes_dir == Path.home() / "legacy-seals"
+
+
+def test_notes_dir_wins_over_legacy_seals_dir(tmp_tank_dir, monkeypatch):
+    monkeypatch.delenv("TANK_NOTES_DIR", raising=False)
+    monkeypatch.delenv("TANK_SEALS_DIR", raising=False)
+    monkeypatch.delenv("TANK_WATCH", raising=False)
+    _write_config(
+        tmp_tank_dir,
+        'observer:\n  notes_dir: "~/new-notes"\n  seals_dir: "~/legacy-seals"\n',
+    )
+    obs = Observer.from_config()
+    assert obs.notes_dir == Path.home() / "new-notes"

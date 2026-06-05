@@ -47,7 +47,10 @@ class Observer:
     ):
         home = Path.home()
         env_projects = os.environ.get("TANK_PROJECTS_ROOT")
-        env_notes = os.environ.get("TANK_NOTES_DIR")
+        # TANK_SEALS_DIR is the deprecated pre-0.6.x name, kept as a fallback
+        # so tanks configured against the old README keep their notes feed.
+        env_notes = os.environ.get("TANK_NOTES_DIR") \
+            or os.environ.get("TANK_SEALS_DIR")
         self.projects_root = projects_root or (
             Path(env_projects) if env_projects else (home / "projects")
         )
@@ -73,12 +76,16 @@ class Observer:
 
         Environment overrides: TANK_PROJECTS_ROOT, TANK_NOTES_DIR, and
         TANK_WATCH (comma-separated names). ``~`` is expanded in path values.
+        The pre-0.6.x names (``seals_dir`` / TANK_SEALS_DIR) are accepted as
+        deprecated fallbacks.
         """
         cfg = cls._load_config()
         projects_root = _expand(os.environ.get("TANK_PROJECTS_ROOT")) or \
             _expand(cfg.get("projects_root"))
         notes_dir = _expand(os.environ.get("TANK_NOTES_DIR")) or \
-            _expand(cfg.get("notes_dir"))
+            _expand(cfg.get("notes_dir")) or \
+            _expand(os.environ.get("TANK_SEALS_DIR")) or \
+            _expand(cfg.get("seals_dir"))
 
         env_watch = os.environ.get("TANK_WATCH")
         if env_watch is not None:

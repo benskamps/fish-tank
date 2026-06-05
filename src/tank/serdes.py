@@ -39,11 +39,15 @@ def _decode(obj: Any) -> Any:
     return obj
 
 
+# Legacy species names (pre-0.6.x worlds) -> their current bestiary keys.
+_SPECIES_RENAMES = {"witnessfish": "notefish"}
+
+
 def _fish_from_dict(d: dict) -> Fish:
     return Fish(
         id=d["id"],
         name=d["name"],
-        species=d["species"],
+        species=_SPECIES_RENAMES.get(d["species"], d["species"]),
         glyph=d["glyph"],
         born_at=d["born_at"],
         lifespan_days=d["lifespan_days"],
@@ -77,7 +81,9 @@ def world_from_json(blob: str) -> World:
     raw = _decode(json.loads(blob))
     fish = [_fish_from_dict(f) for f in raw["fish"]]
     weather = _weather_from_dict(raw["weather"])
-    seen_notes = raw["seen_notes"]
+    # Pre-0.6.x worlds saved this set under "seen_seals". Accept either key so
+    # an existing world survives the rename instead of being quarantined.
+    seen_notes = raw.get("seen_notes", raw.get("seen_seals", set()))
     seen_projects = raw["seen_projects"]
     return World(
         schema_version=raw["schema_version"],

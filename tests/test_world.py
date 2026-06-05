@@ -50,7 +50,8 @@ def test_corrupt_world_recovers_and_archives(tmp_tank_dir, fixed_now):
     store = WorldStore()
     world = store.load_or_init(now=fixed_now)
     assert world.fish == []
-    broken = list(tmp_tank_dir.glob("world.json.broken-*"))
+    broken = [p for p in tmp_tank_dir.glob("world.json.broken-*")
+              if not p.name.endswith(".why.txt")]
     assert len(broken) == 1
     assert broken[0].read_text() == "{not json"
 
