@@ -28,9 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **`crashstrider` now hatches from real machine crashes.** On Windows, a
-  best-effort crash sense reads the Application event log (via `wevtutil`) for recent
-  application-error / app-hang / BugCheck events, dedupes them so the same crash never
-  spawns twice, and turns each fresh one into a brief, frantic `crashstrider`. It's
+  best-effort crash sense reads the Windows **System** event log (via `wevtutil`) for
+  unexpected-shutdown (event `6008`) and BugCheck/BSOD (event `1001`) records, dedupes them
+  so the same crash never spawns twice, and turns each fresh one into a brief, frantic
+  `crashstrider`. (The noisier Kernel-Power `41` is deliberately excluded so an ordinary
+  ungraceful reboot doesn't fake a crash.) It's
   strictly best-effort — if the log is unavailable, empty, or slow, the tick carries
   on untouched; a crash can never break a tick.
 - **`tank serve` night level-up.** The animated localhost aquarium got a tasteful
