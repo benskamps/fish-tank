@@ -1,5 +1,9 @@
 # fish-tank
 
+![A night-phase fish-tank aquarium rendered by `tank serve`: pale fish drifting across dark water with a soft bioluminescent glow, faint motes in the water, and a small aquascape — plant stems, a rock mound, a tiny chest, and reeds — resting on the floor.](docs/img/tank-serve-night.png)
+
+*Above: the animated `tank serve` aquarium at night. Below: the same tank in your terminal.*
+
 ```text
 ┌──────────────────────────────────────────────────────┐
 │  ◕ tank: 9 fish    42°C                              │
@@ -18,8 +22,6 @@
   the tank feels: calm
  dusk · temp 41.9°C · current 0.10 · silt 0.82 · light 0.60 · 9 fish
 ```
-
-<!-- HERO: tank-serve.gif / web-demo screenshot goes here (captured in the below-pass) -->
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -67,7 +69,11 @@ Five minutes from clone to a living tank:
 ```bash
 git clone https://github.com/benskamps/fish-tank
 cd fish-tank
-python -m venv .venv && .venv/Scripts/activate   # Windows; use source .venv/bin/activate elsewhere
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
 pip install -e .
 
 tank tick      # seed the first world right now (one manual tick)

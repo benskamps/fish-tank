@@ -27,6 +27,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tank.__version__`, so `importlib.metadata.version("fish-tank")` reports `0.6.0`.
 
 ### Added
+- **`crashstrider` now hatches from real machine crashes.** On Windows, a
+  best-effort crash sense reads the Application event log (via `wevtutil`) for recent
+  application-error / app-hang / BugCheck events, dedupes them so the same crash never
+  spawns twice, and turns each fresh one into a brief, frantic `crashstrider`. It's
+  strictly best-effort — if the log is unavailable, empty, or slow, the tick carries
+  on untouched; a crash can never break a tick.
+- **`tank serve` night level-up.** The animated localhost aquarium got a tasteful
+  nighttime glow-up: a soft bioluminescent halo on the fish after dark (it breathes
+  gently and respects `prefers-reduced-motion`), living water — faint motes that
+  drift and sink so the tank is never still — and a small, clear aquascape resting on
+  the floor (a couple of plant stems, a low rock mound, a tiny chest, a reed cluster).
 - `CHANGELOG.md`, `CONTRIBUTING.md`, and a GitHub Actions CI workflow that runs the
   test suite (with `PYTHONIOENCODING=utf-8`) on every push and pull request.
 - README storefront pass: badges, a species/event table, the "terrarium, not a
