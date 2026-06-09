@@ -8,7 +8,7 @@ import os
 from dataclasses import dataclass
 
 from tank import paths
-from tank.bestiary import Species, load_bundled
+from tank.bestiary import Species, load as load_species
 from tank.clock import Clock, ClockProtocol
 from tank.hardware import sample as real_sample
 from tank.models import Death
@@ -42,11 +42,15 @@ class TickEngine:
         self.clock = self.clock or Clock()
         self.hardware = self.hardware or _RealHardware()
         self.observer = self.observer or Observer.from_config()
-        self.species = self.species or load_bundled()
+        self.species = self.species or load_species()
         self.store = WorldStore()
 
     def run_once(self) -> None:
         paths.ensure_dirs()
+        # Seed editable bestiary.yaml / epitaphs.yaml on first run so the
+        # README's "edit the file and the next tick picks it up" promise has a
+        # file to edit. Idempotent; never overwrites user edits.
+        paths.seed_user_data()
         try:
             with self.store.lock(timeout=5.0):
                 self._tick_locked()

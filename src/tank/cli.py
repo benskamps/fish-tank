@@ -9,7 +9,7 @@ import sys
 import uuid
 
 from tank import paths
-from tank.bestiary import load_bundled
+from tank.bestiary import load as load_species
 from tank.clock import Clock
 from tank.models import Fish
 from tank.render.frame import compose, render
@@ -121,8 +121,15 @@ def _cmd_tick(args) -> int:
 
 def _cmd_adopt(args) -> int:
     _ensure_world()
-    species_table = load_bundled()
-    sp = species_table.get(args.species) or species_table["guppy"]
+    species_table = load_species()
+    sp = species_table.get(args.species) or species_table.get("guppy")
+    if sp is None:
+        # An override bestiary without a "guppy" and an unknown --species: pick
+        # any species rather than crashing on a hard-coded key that isn't there.
+        sp = next(iter(species_table.values()), None)
+    if sp is None:
+        print("no species available to adopt (empty bestiary)", file=sys.stderr)
+        return 1
     world = _load_world()
     fish = Fish(
         id=uuid.uuid4().hex[:8], name=args.name, species=sp.key,

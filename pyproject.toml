@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fish-tank"
-version = "0.6.0"
+dynamic = ["version"]
 description = "A terminal aquarium that lives in your machine."
 requires-python = ">=3.11"
 dependencies = [
@@ -21,6 +21,9 @@ dev = [
 
 [project.scripts]
 tank = "tank.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "tank.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -76,6 +76,34 @@ def test_old_age_death_appends_to_graveyard(tmp_tank_dir, fixed_now):
     assert any('"old_age"' in line or '"crowding"' in line for line in lines)
 
 
+def test_tick_honors_user_bestiary_override_end_to_end(tmp_tank_dir, fixed_now):
+    """The marquee README promise: edit ~/.tank/bestiary.yaml and the next
+    tick picks up your changes. Drives the REAL load path (species=None ->
+    bestiary.load()), not an injected table."""
+    override = paths.bestiary_path()
+    override.write_text(
+        "myfish:\n"
+        "  glyph_pool: ['<o>']\n"
+        "  category: custom\n"
+        "  spawn_trigger: ship_event\n",
+        encoding="utf-8",
+    )
+    clock = FakeClock(fixed_now)
+    hw = FakeHardware([_quiet()])
+    obs = FakeObserver([[
+        Event(kind="ship", project="thelongway", detail="abc", at=fixed_now),
+    ]])
+    # species left as None: TickEngine must build it from bestiary.load(),
+    # which honors the override file we just wrote.
+    engine = TickEngine(clock=clock, hardware=hw, observer=obs)
+    assert "myfish" in engine.species
+    assert "guppy" not in engine.species  # override replaced the bundled set
+    engine.run_once()
+    world_blob = json.loads(paths.world_path().read_text())
+    species = [f["species"] for f in world_blob["fish"]]
+    assert "myfish" in species
+
+
 def test_world_persists_across_ticks(tmp_tank_dir, fixed_now):
     clock = FakeClock(fixed_now)
     hw = FakeHardware([_quiet(), _quiet()])

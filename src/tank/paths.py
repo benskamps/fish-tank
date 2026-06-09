@@ -42,6 +42,42 @@ def first_run_copy(data_dir: Path) -> list[Path]:
     return copied
 
 
+# Only these bundled files are user-editable knobs worth seeding into ~/.tank/.
+# (default_config.yaml is a sample, not loaded — keep it bundled-only.)
+_SEED_FILES = ("bestiary.yaml", "epitaphs.yaml")
+
+
+def seed_user_data() -> list[Path]:
+    """Seed editable copies of the bundled bestiary/epitaphs into ~/.tank/.
+
+    The README tells users to edit ``~/.tank/bestiary.yaml`` and
+    ``~/.tank/epitaphs.yaml``; without this they'd have to hand-create those
+    files before the override loaders (bestiary.load / mortality templates)
+    could pick them up. Best-effort and idempotent: existing user edits are
+    never overwritten, and a missing/odd package layout never blocks a tick.
+    Returns the list of files actually written.
+    """
+    import importlib.resources as resources
+
+    ensure_dirs()
+    copied: list[Path] = []
+    try:
+        data_root = resources.files("tank").joinpath("data")
+        for name in _SEED_FILES:
+            dst = tank_home() / name
+            if dst.exists():
+                continue
+            src = data_root.joinpath(name)
+            text = src.read_text(encoding="utf-8")
+            dst.write_text(text, encoding="utf-8")
+            copied.append(dst)
+    except Exception:
+        # Seeding is a convenience, never load-bearing — a packaging quirk
+        # must not break the tick. The override loaders fall back to bundled.
+        return copied
+    return copied
+
+
 def world_path() -> Path:
     return tank_home() / "world.json"
 
