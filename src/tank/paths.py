@@ -114,6 +114,17 @@ def epitaphs_path() -> Path:
     return tank_home() / "epitaphs.yaml"
 
 
+def last_crash_path() -> Path:
+    """Dedup marker for the Windows crash detector (see tank.crashsense).
+
+    Holds the UTC-ISO timestamp of the most-recent machine crash already turned
+    into a kernel_error event, so a crash is never re-spawned across ticks. This
+    is a DEDICATED file deliberately kept OUT of the world.json serdes schema —
+    a prior schema change caused a quarantine incident, so crash dedup state
+    lives on its own here instead of in the persisted World."""
+    return tank_home() / "last_crash"
+
+
 def log_path() -> Path:
     return tank_home() / "log.txt"
 

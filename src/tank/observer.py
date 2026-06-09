@@ -15,7 +15,7 @@ from pathlib import Path
 
 import yaml
 
-from tank import paths, proc
+from tank import crashsense, paths, proc
 from tank.models import Event, World
 
 logger = logging.getLogger(__name__)
@@ -144,7 +144,19 @@ class Observer:
         events.extend(self._scan_projects(candidates, world))
         events.extend(self._scan_git(candidates, world))
         events.extend(self._scan_notes(world))
+        events.extend(self._scan_crashes())
         return events
+
+    def _scan_crashes(self) -> list[Event]:
+        """Emit a kernel_error per real machine crash (crashstrider's birth).
+
+        Delegates to the best-effort, Windows-only crash detector. Its dedup
+        marker uses real wall-clock crash timestamps (independent of the
+        simulated tick clock), so the baseline reference is the true now. The
+        whole detector is internally guarded — it can only ever return events or
+        an empty list, never raise — so a crash-log read can't freeze the tick.
+        """
+        return crashsense.scan_crashes(dt.datetime.now(tz=dt.timezone.utc))
 
     def _scan_projects(self, candidates: list[Path], world: World) -> list[Event]:
         out: list[Event] = []
