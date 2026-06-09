@@ -160,8 +160,98 @@ _JS = r"""
   };
   var ANCHOR = { shipfish: 1, founderfish: 1, notefish: 1 };
   var PH = { dawn: '#1b1712', day: '#12161a', dusk: '#1a130e', night: '#0a0a0b', witching: '#140b1a' };
+  // Phase -> bioluminescent accent. Only night/witching glow; the lit phases
+  // map to null so the halo clears and fish fall back to their base shadow.
+  var PHA = { dawn: null, day: null, dusk: null, night: '125,167,217', witching: '167,139,250' };
 
-  var ents = [], sig = null, raf = null, last = 0;
+  var ents = [], sig = null, raf = null, last = 0, phase = 'night';
+
+  // --- living water: a tiny pooled set of drifting motes ----------------
+  // Faint particles that slide sideways + sink and wrap, so the tank is never
+  // dead even when idle. Simple linear drift only — no flow field, no rays.
+  var MOTES = 10, motes = [];
+  function buildMotes() {
+    if (motes.length) return;
+    var med = document.createElement('div');
+    med.className = 'medium'; med.setAttribute('aria-hidden', 'true');
+    for (var i = 0; i < MOTES; i++) {
+      var m = document.createElement('span');
+      m.textContent = i % 3 === 0 ? '·' : '.';
+      med.appendChild(m);
+      motes.push({
+        el: m,
+        x: Math.random() * 100, y: Math.random() * 100,
+        vx: 1.1 + Math.random() * 1.8,            // slow sideways slide (%/s)
+        vy: 0.7 + Math.random() * 1.0,            // gentle sink (%/s)
+        op: 0.10 + Math.random() * 0.14
+      });
+    }
+    T.appendChild(med);
+    for (var j = 0; j < motes.length; j++) {
+      motes[j].el.style.left = motes[j].x + '%';
+      motes[j].el.style.top = motes[j].y + '%';
+      motes[j].el.style.opacity = motes[j].op;
+    }
+  }
+  function stepMotes(dt) {
+    for (var i = 0; i < motes.length; i++) {
+      var m = motes[i];
+      m.x += m.vx * dt; m.y += m.vy * dt;
+      if (m.x > 102) { m.x = -2; m.y = Math.random() * 100; }
+      if (m.y > 102) { m.y = -2; m.x = Math.random() * 100; }
+      m.el.style.left = m.x + '%'; m.el.style.top = m.y + '%';
+    }
+  }
+
+  // --- a small clear aquascape ----------------------------------------
+  // 2-3 ground objects + a couple of plant stems on the floor, drawn ONLY
+  // with glyphs that hold 1 cell in the page mono stack (full/half blocks,
+  // light shades, light box verticals/horizontals, a plain circle). No arcs,
+  // no diagonals, no heavy/mixed box, no quadrants — those shear under pre.
+  var SCAPE = false;
+  function buildScape() {
+    if (SCAPE) return; SCAPE = true;
+    var floor = document.createElement('div');
+    floor.className = 'scape'; floor.setAttribute('aria-hidden', 'true');
+    // each entry: [art, left%, a soft tint]
+    var props = [
+      // a small plant: two light stems
+      ['│\n│\n│', 14, '#5e8f6a'],
+      // a low block rock mound
+      ['  ░░\n ▒▒▒░\n▓▓▒▒▒░', 30, '#8a8f99'],
+      // a small chest: lid, body, a round latch
+      ['────\n│●│\n████', 52, '#9a7a4a'],
+      // a taller reed cluster
+      ['│ │\n│ │\n│││', 74, '#5e8f6a']
+    ];
+    for (var i = 0; i < props.length; i++) {
+      var p = document.createElement('pre');
+      p.textContent = props[i][0];
+      p.style.left = props[i][1] + '%';
+      p.style.color = props[i][2];
+      floor.appendChild(p);
+    }
+    T.appendChild(floor);
+  }
+
+  // --- bioluminescent night glow --------------------------------------
+  // Write the halo INLINE on the span (inline wins specificity, no stylesheet
+  // fight). Night/witching only; lit phases clear it to '' so the base .f
+  // legibility shadow takes over (never 'none'). A subtle breathing pulse
+  // reuses the fish's own phase seed; reduced-motion gets a static dim halo.
+  function applyGlow(f) {
+    var accent = PHA[phase];
+    if (!accent) { f.sp.style.textShadow = ''; return; }
+    var blur, alpha;
+    if (reduced) { blur = 6; alpha = 0.55; }
+    else {
+      var pulse = 0.5 + 0.5 * Math.sin(f.wp * 0.6 + f.t);  // 0..1, gentle breath
+      blur = 5 + pulse * 4;                                 // 5..9 px
+      alpha = 0.45 + pulse * 0.30;                          // 0.45..0.75
+    }
+    f.sp.style.textShadow =
+      '0 0 ' + blur.toFixed(1) + 'px rgba(' + accent + ',' + alpha.toFixed(2) + ')';
+  }
 
   function build(fish) {
     var nodes = T.querySelectorAll('.f');
@@ -188,6 +278,7 @@ _JS = r"""
   }
 
   function step(dt) {
+    stepMotes(dt);
     for (var i = 0; i < ents.length; i++) {
       var f = ents[i];
       if (f.anchor) {                                   // landmarks hover in place
@@ -196,6 +287,7 @@ _JS = r"""
         f.y = f.hy + Math.sin(f.t * 0.9) * 1.0;
         f.el.style.left = f.x + '%'; f.el.style.top = f.y + '%';
         f.sp.style.transform = 'scaleX(' + f.nat + ') rotate(' + (2 * Math.sin(f.t * 3)).toFixed(1) + 'deg)';
+        applyGlow(f);
         continue;
       }
       f.x += f.vx * dt;
@@ -209,6 +301,7 @@ _JS = r"""
       var sx = (f.vx >= 0 ? 1 : -1) * f.nat;
       f.el.style.left = f.x + '%'; f.el.style.top = f.y + '%';
       f.sp.style.transform = 'scaleX(' + sx + ') rotate(' + rot + 'deg)';
+      applyGlow(f);
     }
   }
 
@@ -225,18 +318,28 @@ _JS = r"""
       var f = ents[i];
       f.el.style.left = f.x + '%'; f.el.style.top = f.y + '%';
       f.sp.style.transform = 'scaleX(' + ((f.vx >= 0 ? 1 : -1) * f.nat) + ')';
+      applyGlow(f);
     }
+  }
+
+  function reglowAll() {                 // phase changed: refresh halos in place
+    for (var i = 0; i < ents.length; i++) applyGlow(ents[i]);
   }
 
   function poll() {
     fetch('/tank.json', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
       document.body.style.background = PH[d.phase] || '#0a0a0b';
+      buildScape(); buildMotes();
+      var phaseChanged = (d.phase || 'night') !== phase;
+      phase = d.phase || 'night';
       var fish = d.fish || [];
       var s = fish.map(function (f) { return f.species + ':' + f.glyph; }).join('|');
       if (s !== sig || ents.length !== fish.length) {
         build(fish); sig = s;
         if (reduced) placeStatic();
         else if (raf == null) { last = 0; raf = window.requestAnimationFrame(loop); }
+      } else if (phaseChanged && reduced) {
+        reglowAll();   // static mode won't re-run step; refresh halos here
       }
       var st = document.getElementById('stat');
       if (st) {
@@ -275,12 +378,26 @@ _PAGE = """<!doctype html>
     background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.25) 100%);
   }
   .f {
-    position: absolute; white-space: pre; color: #aeb9c9;
+    position: absolute; white-space: pre; color: #aeb9c9; z-index: 1;
     text-shadow: 0 0 7px rgba(0,0,0,0.5);
     font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
     will-change: left, top;
   }
   .f span { display: inline-block; transform-origin: center center; will-change: transform; }
+  /* ambient drifting medium — faint motes so the water is never still */
+  .medium { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  .medium span {
+    position: absolute; color: #9fb4cf; font-size: 0.7rem;
+    will-change: left, top; user-select: none;
+  }
+  /* a small clear aquascape resting on the floor */
+  .scape { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  .scape pre {
+    position: absolute; bottom: 4px; margin: 0;
+    font-family: inherit; font-size: 0.8rem; line-height: 1.0;
+    white-space: pre; opacity: 0.5;
+    font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
+  }
   #stat { margin-top: 10px; font-size: 0.78rem; opacity: 0.6; }
   noscript pre { font-size: 13px; line-height: 1.2; white-space: pre; color: #cbd5e1; }
   a { color: #7da7d9; }
