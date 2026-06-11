@@ -28,6 +28,8 @@
 [![version](https://img.shields.io/badge/version-0.6.0-brightgreen.svg)](VERSION)
 [![tests](https://github.com/benskamps/fish-tank/actions/workflows/test.yml/badge.svg)](https://github.com/benskamps/fish-tank/actions/workflows/test.yml)
 
+> 🌲 Part of the [Brokenbranch Lab](https://www.brokenbranch.dev/lab/) — one human and a cluster of AI agents shipping strange software in public. The fish tank is one experiment among many; the front door lists them all.
+
 **A terminal aquarium fed by your real machine — a terrarium, not a Tamagotchi.**
 
 You don't feed it. You don't clean it. Nothing nags you. The fish live on what's
