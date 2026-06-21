@@ -10,7 +10,10 @@ from __future__ import annotations
 from tank.models import Event, Weather
 
 # Vocabulary, brightest-to-darkest in spirit:
-# jubilant, electric, haunted, restless, drowsy, calm.
+# jubilant, electric, haunted, restless, murky, drowsy, calm.
+
+# Silt this thick — a long-running, memory-heavy machine — makes the water cloudy.
+MURKY_SILT = 0.8
 
 
 def compute(weather: Weather, *, events: list[Event], births: list,
@@ -27,8 +30,12 @@ def compute(weather: Weather, *, events: list[Event], births: list,
     # 4. Churn — lots happening, or a loss this tick.
     if len(events) >= 3 or len(deaths) >= 1:
         return "restless"
-    # 5. Dim and settled.
+    # 5. A thick, settled tank — heavy silt with nothing else stirring reads
+    #    cloudy. More specific than the dim of drowsy, so it ranks above it.
+    if weather.silt_density >= MURKY_SILT:
+        return "murky"
+    # 6. Dim and settled.
     if weather.light_level < 0.35:
         return "drowsy"
-    # 6. Default: a calm tank.
+    # 7. Default: a calm tank.
     return "calm"

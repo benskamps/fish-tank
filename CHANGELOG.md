@@ -27,6 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tank.__version__`, so `importlib.metadata.version("fish-tank")` reports `0.6.0`.
 
 ### Added
+- **A `murky` tank mood.** Silt density — already tracked every tick (a long-running,
+  memory-heavy machine clouds the water) — now surfaces in the felt word: a thick,
+  settled tank with nothing else stirring reads `murky` rather than merely `drowsy` or
+  `calm`. Real signals still win — a ship, the witching hour, or churn outrank the
+  cloud — so `murky` only shows up in an otherwise quiet tank.
 - **`crashstrider` now hatches from real machine crashes.** On Windows, a
   best-effort crash sense reads the Windows **System** event log (via `wevtutil`) for
   unexpected-shutdown (event `6008`) and BugCheck/BSOD (event `1001`) records, dedupes them

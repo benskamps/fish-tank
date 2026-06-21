@@ -7,9 +7,9 @@ from tank.models import Event, Weather
 from tank.mood import compute
 
 
-def _weather(phase="day", pressure=0.0, current=0.0, light=0.8):
+def _weather(phase="day", pressure=0.0, current=0.0, light=0.8, silt=0.0):
     return Weather(
-        temperature_c=22.0, current_strength=current, silt_density=0.0,
+        temperature_c=22.0, current_strength=current, silt_density=silt,
         light_level=light, pressure=pressure, fossil_layer=[], phase=phase,
     )
 
@@ -47,6 +47,33 @@ def test_event_churn_is_restless():
 def test_a_death_is_restless():
     m = compute(_weather(), events=[], births=[], deaths=["d"])
     assert m == "restless"
+
+
+def test_heavy_silt_quiet_tank_is_murky():
+    # A thick, settled tank with nothing else going on feels cloudy.
+    m = compute(_weather(silt=0.85), events=[], births=[], deaths=[])
+    assert m == "murky"
+
+
+def test_murky_needs_a_quiet_tank():
+    # Heavy silt during real churn does not mask the churn.
+    evs = [_event() for _ in range(3)]
+    m = compute(_weather(silt=0.9), events=evs, births=[], deaths=[])
+    assert m == "restless"
+
+
+def test_clear_water_is_not_murky():
+    # Low silt never reads as murky, even in a quiet tank.
+    m = compute(_weather(silt=0.3, light=0.8), events=[], births=[], deaths=[])
+    assert m == "calm"
+
+
+def test_murky_outranks_drowsy():
+    # A dim *and* heavily-silted quiet tank reads murky, not merely drowsy:
+    # the cloud is the more specific, more felt signal.
+    m = compute(_weather(phase="night", light=0.2, silt=0.85),
+                events=[], births=[], deaths=[])
+    assert m == "murky"
 
 
 def test_dim_settled_night_is_drowsy():
