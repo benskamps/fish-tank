@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-06-23
+
 ### Fixed
 - **The `~/.tank/bestiary.yaml` override is now honored.** Editing your bestiary
   (or epitaphs) and waiting for the next tick now actually changes the tank — the
@@ -94,7 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First public cut of fish-tank: a terminal aquarium that lives in your machine, fed by
   hardware weather and your real activity, with a bestiary, mortality, and epitaphs.
 
-[Unreleased]: https://github.com/benskamps/fish-tank/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/benskamps/fish-tank/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/benskamps/fish-tank/releases/tag/v0.7.0
 [0.6.0]: https://github.com/benskamps/fish-tank/releases/tag/v0.6.0
 [0.5.0]: https://github.com/benskamps/fish-tank/releases/tag/v0.5.0
 [0.4.0]: https://github.com/benskamps/fish-tank/releases/tag/v0.4.0
