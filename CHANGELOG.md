@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-07-03
+
+### Added
+- **`tank serve` now ships the full brokenbranch.dev/aquarium renderer.** The
+  local aquarium at `http://127.0.0.1:7311/tank` reaches parity with the live
+  site: the same requestAnimationFrame simulation — wander + loose schooling
+  (boids), a closed-form flow field, burst-and-coast locomotion, habitat-zone
+  containment and cursor-startle — plus god rays, caustics, depth attenuation,
+  swaying weeds and decor, near-surface reflections, light-trails, a
+  bioluminescent night glow, and click-to-feed. Glyphs flip to face their
+  travel direction and undulate with a speed-locked tail beat. It's the same
+  renderer code that runs on the author's site; here it polls this server's
+  `/tank.json` instead of the site's `/api/tank`, and the snapshot is built
+  locally from `~/.tank/world.json`. Still no dependencies, still one file.
+- A `<noscript>` block keeps the static ASCII tank for JS-off viewers, so the
+  terminal soul survives either way.
+
+### Changed
+- `tank serve` gained a machine-readable `GET /tank.json` endpoint — a
+  sanitized snapshot (nested `weather` block, flat fish roster, `fish_count`,
+  `fossil_layer`, `tick_at`) that the animated page polls every 15s. With no
+  world yet it degrades to `{"empty": true}` so the renderer settles to a
+  glassy idle rather than erroring.
+
 ## [0.7.0] - 2026-06-23
 
 ### Fixed
@@ -96,7 +120,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First public cut of fish-tank: a terminal aquarium that lives in your machine, fed by
   hardware weather and your real activity, with a bestiary, mortality, and epitaphs.
 
-[Unreleased]: https://github.com/benskamps/fish-tank/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/benskamps/fish-tank/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/benskamps/fish-tank/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/benskamps/fish-tank/releases/tag/v0.7.0
 [0.6.0]: https://github.com/benskamps/fish-tank/releases/tag/v0.6.0
 [0.5.0]: https://github.com/benskamps/fish-tank/releases/tag/v0.5.0
