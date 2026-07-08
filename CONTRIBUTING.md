@@ -57,3 +57,10 @@ output crashes in a live terminal — hence the env var, not a code change.)
 `docs/DESIGN.md` explains *why* the tank is built the way it is — the terrarium soul,
 the nitrogen-cycle metaphor, and the strict module boundaries. Worth a read before a
 larger change.
+
+## Maintainer: publishing
+
+The repo is developed from two local clones (a push-disabled dev clone and a
+push-enabled public mirror). If you're the maintainer wondering "why did my push fail?"
+or "how does a change reach the public repo?", see **[PUBLISHING.md](PUBLISHING.md)**.
+Contributors can ignore this — fork and open a PR as usual.
