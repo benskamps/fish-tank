@@ -1,6 +1,6 @@
 guppy:
   category: common
-  glyph_pool: [">°))<", "<°))>", ">o))<"]
+  glyph_pool: ["><(°>", "><(o>", "><((°>"]
   fossil_glyph: "·"
   base_lifespan_days: [7, 30]
   spawn_trigger: bestiary_roll
@@ -12,7 +12,7 @@ guppy:
 
 tetra:
   category: common
-  glyph_pool: ["<·><", "><·>"]
+  glyph_pool: ["><·>", "><°>"]
   fossil_glyph: "."
   base_lifespan_days: [10, 40]
   spawn_trigger: bestiary_roll
@@ -24,7 +24,7 @@ tetra:
 
 rummynose:
   category: common
-  glyph_pool: ["=>°)>", "<(°<=", "=>o)>"]
+  glyph_pool: ["><(°=>", "><(o=>", "><((°=>"]
   fossil_glyph: "‚"
   base_lifespan_days: [14, 50]
   spawn_trigger: bestiary_roll
@@ -36,7 +36,7 @@ rummynose:
 
 hatchetfish:
   category: common
-  glyph_pool: ["^v^>", "<^v^"]
+  glyph_pool: ["><^v^>", "><^V^>"]
   fossil_glyph: "˄"
   base_lifespan_days: [7, 25]
   spawn_trigger: bestiary_roll
@@ -48,7 +48,7 @@ hatchetfish:
 
 killifish:
   category: common
-  glyph_pool: ["><≈>", "<≈><"]
+  glyph_pool: ["><≈°>", "><≈≈°>"]
   fossil_glyph: "✶"
   base_lifespan_days: [3, 12]
   spawn_trigger: bestiary_roll
@@ -60,7 +60,7 @@ killifish:
 
 snail:
   category: common
-  glyph_pool: ["@_", "_@"]
+  glyph_pool: ["@_", "o_"]
   fossil_glyph: "○"
   base_lifespan_days: [60, 180]
   spawn_trigger: bestiary_roll
@@ -72,7 +72,7 @@ snail:
 
 pleco:
   category: common
-  glyph_pool: ["<#=>", "<=#>"]
+  glyph_pool: ["><#=>", "><##=>"]
   fossil_glyph: "▬"
   base_lifespan_days: [120, 365]
   spawn_trigger: bestiary_roll
@@ -84,7 +84,7 @@ pleco:
 
 coldfin:
   category: weather_cold
-  glyph_pool: ["><((°>", "<°)))><", "{·_·}>"]
+  glyph_pool: ["><((°>", "><(((°>", "{·_·}>"]
   fossil_glyph: "✦"
   base_lifespan_days: [14, 60]
   spawn_trigger: cold_sustained
@@ -96,7 +96,7 @@ coldfin:
 
 frostneon:
   category: weather_cold
-  glyph_pool: ["<*°)>", "<(*°)<"]
+  glyph_pool: ["><(*°>", "><((*°>"]
   fossil_glyph: "❅"
   base_lifespan_days: [7, 30]
   spawn_trigger: cold_sustained
@@ -108,7 +108,7 @@ frostneon:
 
 thermalwisp:
   category: weather_hot
-  glyph_pool: [">~~~>", "~~>>>", ">.>"]
+  glyph_pool: ["><~~~>", "><~~>", ">.>"]
   fossil_glyph: "✧"
   base_lifespan_days: [3, 14]
   spawn_trigger: heat_sustained
@@ -120,7 +120,7 @@ thermalwisp:
 
 emberlung:
   category: weather_hot
-  glyph_pool: [">≈≈≈>", "<≈≈<"]
+  glyph_pool: ["><≈≈≈>", "><≈≈>"]
   fossil_glyph: "✸"
   base_lifespan_days: [2, 8]
   spawn_trigger: heat_sustained
@@ -144,7 +144,7 @@ crashstrider:
 
 shipfish:
   category: project_born
-  glyph_pool: ["><((((°>", "<°))))><"]
+  glyph_pool: ["><((((°>", "><(((°>"]
   fossil_glyph: "★"
   base_lifespan_days: [30, 365]
   spawn_trigger: ship_event
@@ -156,7 +156,7 @@ shipfish:
 
 founderfish:
   category: project_born
-  glyph_pool: ["<°)F)><"]
+  glyph_pool: ["><(F(°>"]
   fossil_glyph: "✪"
   base_lifespan_days: [60, 730]
   spawn_trigger: new_project
@@ -168,7 +168,7 @@ founderfish:
 
 driftfish:
   category: project_born
-  glyph_pool: ["><o>", "<o><"]
+  glyph_pool: ["><o>", "><(o>"]
   fossil_glyph: "."
   base_lifespan_days: [3, 14]
   spawn_trigger: commit_event
@@ -180,7 +180,7 @@ driftfish:
 
 notefish:
   category: note_born
-  glyph_pool: ["<°)W><"]
+  glyph_pool: ["><(W(°>"]
   fossil_glyph: "◇"
   base_lifespan_days: [14, 90]
   spawn_trigger: note_event
@@ -216,7 +216,7 @@ cleanershrimp:
 
 night-fish:
   category: nocturnal
-  glyph_pool: ["~(o_o)~", "·(u_u)·", "°<))°<", ">°))°<"]
+  glyph_pool: ["~(o_o)~", "·(u_u)·", "><((°°>", "><(°°>"]
   fossil_glyph: "☾"
   base_lifespan_days: [1, 2]
   spawn_trigger: witching
