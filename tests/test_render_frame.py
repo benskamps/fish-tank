@@ -2,7 +2,21 @@ import datetime as dt
 from pathlib import Path
 
 from tank.models import Fish, Weather, World
+from tank.glyphs import mirror_glyph
 from tank.render.frame import compose, render
+
+def _row_of(rows, glyph):
+    """Index of the row containing `glyph` in EITHER orientation.
+
+    Fish are mirrored per-heading by the renderer, so asserting on the authored
+    spelling alone is a false negative half the time.
+    """
+    want = {glyph, mirror_glyph(glyph)}
+    for i, r in enumerate(rows):
+        if any(g in r for g in want):
+            return i
+    raise AssertionError(f"neither {glyph!r} nor its mirror found in {rows!r}")
+
 
 FIXTURES = Path(__file__).parent / "fixtures" / "frames"
 
@@ -41,8 +55,11 @@ def test_compose_empty_tank_has_expected_height():
 
 def test_compose_with_fish_includes_glyphs():
     out = render(compose(_with_fish()), style="plain")
-    assert ">°))<" in out
-    assert "<°)))><" in out
+    # Either orientation counts — the renderer gives each fish a heading and
+    # mirrors the canonical glyph to match it (see tank.glyphs).
+    for glyph in (">°))<", "<°)))><"):
+        assert glyph in out or mirror_glyph(glyph) in out, (
+            f"neither {glyph!r} nor its mirror rendered")
 
 
 def test_render_line_is_single_line():
@@ -84,8 +101,11 @@ def test_bottom_dweller_renders_below_surface_dweller():
     w.fish = [surf, bott]
     frame = compose(w, width=56, height=14)
     rows = frame.fish_layer
-    surf_row = next(i for i, r in enumerate(rows) if "^v^>" in r)
-    bott_row = next(i for i, r in enumerate(rows) if "<#=>" in r)
+    # A fish may be drawn mirrored (see tank.glyphs: the bestiary is authored in
+    # one canonical facing and the RENDERER picks a heading), so look for either
+    # orientation rather than the literal authored spelling.
+    surf_row = _row_of(rows, "^v^>")
+    bott_row = _row_of(rows, "<#=>")
     assert surf_row < bott_row  # surface fish above bottom fish
 
 

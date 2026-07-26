@@ -279,46 +279,59 @@ _JS = r"""
     eel: 26, anglerfish: 42,                                  // lurker / deep drifter
   };
 
-  // Drawn direction per glyph: +1 = the glyph as written faces RIGHT, -1 = it
-  // faces LEFT. Verified by rendering every glyph and reading the pixels (every
-  // mirror-pair gets opposite signs, so a species swims both ways correctly).
-  // To make a fish face its travel direction we set the span's scaleX sign to
-  // sign(vx) * natFace — so the glyph never moonwalks regardless of which way
-  // the sim sends it. Unknown glyphs fall back to a heuristic below.
-  var FACING = {
-    '>°))<': 1, '<°))>': -1, '>o))<': 1,                       // guppy
-    '<·><': -1, '><·>': 1,                                     // tetra
-    '=>°)>': 1, '<(°<=': -1, '=>o)>': 1,                       // rummynose
-    '^v^>': 1, '<^v^': -1,                                     // hatchetfish
-    '><≈>': 1, '<≈><': -1,                                     // killifish
-    '@_': 1, '_@': -1,                                         // snail
-    '<#=>': 1, '<=#>': -1,                                     // pleco
-    '><((°>': 1, '<°)))><': -1, '{·_·}>': 1,                   // coldfin
-    '<*°)>': 1, '<(*°)<': -1,                                  // frostneon
-    '>~~~>': 1, '~~>>>': 1, '>.>': 1,                          // thermalwisp
-    '>≈≈≈>': 1, '<≈≈<': -1,                                    // emberlung
-    '><x>': 1, '><X>': 1,                                      // crashstrider
-    '><((((°>': 1, '<°))))><': -1,                             // shipfish
+  // Drawn direction per glyph.
+  //
+  // The bundled bestiary is CANONICAL: every glyph is authored facing RIGHT
+  // (tail "><" left, body parens curving back, eye, snout ">" right), and
+  // symmetric creatures are symmetric on purpose. Facing is not a property of
+  // the data — it is a property of the render. Here that is the scaleX sign; in
+  // the terminal renderer it is tank.glyphs.mirror_glyph(). So natFace is +1 for
+  // every shipped glyph and there is nothing left to infer.
+  //
+  // This replaced a lookup table plus an eye-position heuristic. That design was
+  // unsound in a way no test could catch: every check computed facing as
+  // sign(scaleX) * natFace, i.e. it multiplied by the table under test, so a
+  // wrong entry rendered a permanently backwards species and reported "ok"
+  // forever. The fix was to remove the ambiguity from the data, not to add
+  // another assertion.
+  //
+  // LEGACY_FACING is the retirement home for the OLD mixed-facing spellings.
+  // Fish keep the glyph they were born with, so a world.json written before the
+  // canonical bestiary can still hold these, and fossils keep them for good.
+  // If you author your OWN bestiary glyphs, draw them facing right and you never
+  // need to touch any of this.
+  var LEGACY_FACING = {
+    '<°))>': -1,                                               // guppy
+    '<·><': -1,                                                // tetra
+    '<(°<=': -1,                                               // rummynose
+    '<^v^': -1,                                                // hatchetfish
+    '<≈><': -1,                                                // killifish
+    '_@': -1,                                                  // snail
+    '<=#>': -1,                                                // pleco
+    '<°)))><': -1,                                             // coldfin
+    '<(*°)<': -1,                                              // frostneon
+    '<≈≈<': -1,                                                // emberlung
+    '<°))))><': -1,                                            // shipfish
     '<°)F)><': -1,                                             // founderfish
-    '><o>': 1, '<o><': -1,                                     // driftfish
-    '<°)W><': -1,                                              // witnessfish
-    'V(°°)V': 1, '(\\°°/)': 1, 'v(°°)v': 1,                    // crab (symmetric)
-    '°v°': 1, '·v·': 1,                                        // cleanershrimp
-    '~(o_o)~': 1, '·(u_u)·': 1, '°<))°<': -1, '>°))°<': 1,     // night-fish
-    '~~~∋°>': 1, '<°∈~~~': -1,                                 // eel (serpentine; head/mouth on the > side)
-    '∽∽∽°>': 1, '<°∽∽∽': -1,                                   // anglerfish (lure rides ahead of the °> head)
+    '<o><': -1,                                                // driftfish
+    '<°)W><': -1,                                              // notefish (and legacy witnessfish)
+    '°<))°<': -1,                                              // night-fish
+    // Retired as MALFORMED, not left-facing: each opens with '>' and closes with
+    // '<', so both wedges point inward and mirroring yields another non-fish
+    // ('>°))<' -> '>((°<'). Nothing could settle their facing because there was
+    // nothing to settle. The -1 is a best effort for stragglers only.
+    '>°))<': -1, '>o))<': -1,                                  // guppy (retired)
+    '>°))°<': -1,                                              // night-fish (retired)
+    // Renderer-only creatures, not in the bestiary. Left as authored.
+    '~~~∋°>': 1, '<°∈~~~': -1,                                 // eel
+    '∽∽∽°>': 1, '<°∽∽∽': -1,                                   // anglerfish
   };
 
-  // Heuristic facing for an unknown glyph: the eye (°/o) sits near the head, so
-  // its half tells us the way it faces; else the outermost </> wins.
+  // Canonical bestiary => +1. Only retired spellings need a lookup.
   function natFace(g) {
-    if (Object.prototype.hasOwnProperty.call(FACING, g)) return FACING[g];
     if (!g) return 1;
-    var eye = g.search(/[°o]/);
-    if (eye >= 0) return eye < g.length / 2 ? -1 : 1;
-    var lt = g.indexOf('<'), gt = g.lastIndexOf('>');
-    if (lt < 0 && gt < 0) return 1;
-    return gt > lt ? 1 : -1;
+    if (Object.prototype.hasOwnProperty.call(LEGACY_FACING, g)) return LEGACY_FACING[g];
+    return 1;
   }
 
   // Glow + lure brightness live ONLY in night/witching (constraint #1).

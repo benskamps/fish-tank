@@ -4,6 +4,7 @@ from __future__ import annotations
 import datetime as dt
 from dataclasses import dataclass
 
+from tank.glyphs import mirror_glyph
 from tank.models import Fish, World
 from tank.rng import seeded
 
@@ -161,8 +162,16 @@ def _make_fish_layer(fish: list[Fish], rows: int, width: int,
         rng = seeded("place", f.id, tick_at.isoformat())
         lo, hi = _zone_band(getattr(f, "zone", "mid"), rows)
         row = rng.randint(lo, max(lo, hi - 1))
-        col = rng.randint(0, max(0, (width - 2) - len(f.glyph)))
-        for i, ch in enumerate(f.glyph):
+        # Bestiary glyphs are all authored facing right (see tank.glyphs), so a
+        # verbatim render would line every fish up pointing the same way. Give
+        # each one a heading and mirror it if it swims left. Seeded on the fish
+        # id ALONE — not the tick — so a fish keeps its heading between ticks
+        # instead of flip-flopping every time the tank redraws.
+        glyph = f.glyph
+        if seeded("face", f.id).random() < 0.5:
+            glyph = mirror_glyph(glyph)
+        col = rng.randint(0, max(0, (width - 2) - len(glyph)))
+        for i, ch in enumerate(glyph):
             if col + i < width - 2:
                 grid[row][col + i] = ch
     return ["".join(r) for r in grid]
