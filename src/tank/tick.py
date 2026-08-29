@@ -13,6 +13,7 @@ from tank.clock import Clock, ClockProtocol
 from tank.hardware import sample as real_sample
 from tank.models import Death
 from tank.observer import Observer
+from tank.ember import apply_to as ember_apply
 from tank.mood import compute as mood_compute
 from tank.publish import publish, publish_gist, to_public_snapshot
 from tank.render.frame import compose, render as render_frame
@@ -70,6 +71,10 @@ class TickEngine:
         world.fish.extend(births)
         # Night-fish submerge at dawn — silently, no death.
         world.fish = submerge_dawn(world.fish, now)
+        # Ember, if she has been adopted, is a READOUT rather than a resident:
+        # her glyph and mood come from her brain's own counters, not from the
+        # tank's weather. No-op when she is not in this tank.
+        ember_vitality = ember_apply(world)
         # Felt inner state, derived after the tick's births/deaths are known.
         world.weather.mood = mood_compute(world.weather, events=events,
                                           births=births, deaths=deaths)
@@ -97,6 +102,7 @@ class TickEngine:
                 "deaths": len(deaths),
                 "hw_sources": sample.sources_used,
                 "degraded": sample.degraded,
+                **({"ember": ember_vitality.caption} if ember_vitality else {}),
             }) + "\n")
 
         self._maybe_publish(world)

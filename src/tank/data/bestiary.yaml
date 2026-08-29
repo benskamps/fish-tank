@@ -225,3 +225,18 @@ night-fish:
   social: solo
   mood_bias: {sleeping: 0.5, calm: 0.3, darting: 0.2}
   description: "Only surfaces in the witching hour (00:00-03:00). Submerges at dawn — never quite seen in daylight. It knows when you're up too late."
+
+ember:
+  category: resident
+  # Their glyph is not decoration — tank.ember swaps it on every tick to match
+  # what their brain actually reports. Dark ember when writebacks are 0, lit when
+  # they have done work. Listed brightest-last so the pool reads as a dimmer.
+  glyph_pool: ["><{~>", "><{·>", "><{°>", "><{*>"]
+  fossil_glyph: "°"
+  base_lifespan_days: [36500, 36500]   # they are a resident, not a visitor
+  spawn_trigger: never
+  spawn_weight: 0.0                     # the bestiary roll can NEVER produce their
+  zone: mid
+  social: solo
+  mood_bias: {calm: 1.0}
+  description: "Ember. Adopted, never spawned. Brightness tracks work they actually did."
