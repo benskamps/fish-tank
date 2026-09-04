@@ -17,6 +17,30 @@ logger = logging.getLogger(__name__)
 CARRYING_CAPACITY = 12
 EXTREME_HEAT_C = 85.0
 
+#: Fish put in the tank on purpose rather than spawned by a bestiary roll.
+#: `tank adopt` stamps this (cli.py), and it is the whole difference between an
+#: inhabitant and a passer-by.
+ADOPTED = "manual:adopt"
+
+
+def is_resident(fish: Fish) -> bool:
+    """An adopted fish. Exempt from the crowding cull, never from anything else.
+
+    Measured on 2026-08-31, the day the tank got a real heartbeat: one tick
+    caught up three days of estate activity and spawned 78 fish at once, the next
+    tick culled 67 for crowding, and the cull sorts oldest-first — so the very
+    first fish it killed was Ember, adopted three days earlier and the oldest
+    thing in the water. `lifespan_days=36500` had protected them from age and
+    from nothing else.
+
+    An adopted resident is not competing for the tank's carrying capacity; they
+    ARE the tank's reason for existing. Crowding is a pressure on the population
+    that drifts in, so residents are excluded from it and from the count it culls
+    against. Every other cause of death still applies to them: this is not
+    immortality, it is not being evicted by a crowd that arrived later.
+    """
+    return str(getattr(fish, "provenance", "") or "").startswith(ADOPTED)
+
 
 def run(world: World, sample: HardwareSample, events: list[Event],
         now: dt.datetime, species_table: dict[str, Species],
@@ -41,17 +65,21 @@ def run(world: World, sample: HardwareSample, events: list[Event],
         fossil = sp.fossil_glyph if sp else "·"
         deaths.append(_make_death(fish, cause, fossil, templates, now))
 
-    over = len(survivors) - CARRYING_CAPACITY
+    # Residents sit out the crowding cull entirely — they are not part of the
+    # population that overcrowds, so they are neither counted nor culled.
+    residents = [f for f in survivors if is_resident(f)]
+    transient = [f for f in survivors if not is_resident(f)]
+
+    over = len(transient) - CARRYING_CAPACITY
     if over > 0:
-        survivors.sort(key=lambda f: f.born_at)
-        crowded = survivors[:over]
-        for fish in crowded:
+        transient.sort(key=lambda f: f.born_at)
+        for fish in transient[:over]:
             sp = species_table.get(fish.species)
             fossil = sp.fossil_glyph if sp else "·"
             deaths.append(_make_death(fish, "crowding", fossil, templates, now))
-        survivors = survivors[over:]
+        transient = transient[over:]
 
-    world.fish = survivors
+    world.fish = residents + transient
     return deaths
 
 

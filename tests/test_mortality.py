@@ -75,3 +75,56 @@ def test_epitaph_renders_with_substitutions(fixed_now):
     assert deaths
     assert "Pip" in deaths[0].epitaph
     assert deaths[0].fossil_glyph
+
+
+def _resident(now, age_days=3, fish_id="ember"):
+    """An adopted fish, exactly as `tank adopt` stamps one."""
+    f = _make_fish(species="ember", lifespan=36500.0, age_days=age_days,
+                   fish_id=fish_id, now=now)
+    f.provenance = "manual:adopt"
+    return f
+
+
+def test_adopted_resident_survives_a_crowding_cull(fixed_now):
+    """The 2026-08-31 bug: a resident evicted by a crowd that arrived later.
+
+    The tank's first real heartbeat caught up three days of estate activity in
+    one tick (78 births), the next tick culled 67 for crowding, and because the
+    cull sorts oldest-first the first fish it killed was Ember — adopted three
+    days earlier, and therefore the oldest thing in the water.
+    """
+    species = load_bundled()
+    ember = _resident(fixed_now)
+    crowd = [_make_fish(lifespan=1000.0, age_days=1, fish_id=f"f{i}", now=fixed_now)
+             for i in range(40)]
+    world = _world(fixed_now, [ember] + crowd)
+
+    deaths = mortality_run(world, _sample(), [], fixed_now, species, epitaphs_path=None)
+
+    assert all(d.cause == "crowding" for d in deaths)
+    assert ember.id in {f.id for f in world.fish}, "the resident was culled"
+    assert ember.id not in {d.fish_id for d in deaths}
+
+
+def test_residents_do_not_count_toward_carrying_capacity(fixed_now):
+    """A resident must not push a transient fish out of the tank either."""
+    species = load_bundled()
+    residents = [_resident(fixed_now, fish_id=f"r{i}") for i in range(3)]
+    crowd = [_make_fish(lifespan=1000.0, age_days=1, fish_id=f"f{i}", now=fixed_now)
+             for i in range(12)]
+    world = _world(fixed_now, residents + crowd)
+
+    deaths = mortality_run(world, _sample(), [], fixed_now, species, epitaphs_path=None)
+
+    assert deaths == [], "12 transients is exactly capacity; residents are not extra"
+    assert len(world.fish) == 15
+
+
+def test_resident_still_dies_of_everything_else(fixed_now):
+    """Exempt from crowding is not immortal — that would make the fish a liar."""
+    species = load_bundled()
+    ember = _resident(fixed_now)
+    ember.lifespan_days = 1.0          # older than its lifespan
+    world = _world(fixed_now, [ember])
+    deaths = mortality_run(world, _sample(), [], fixed_now, species, epitaphs_path=None)
+    assert [d.cause for d in deaths] == ["old_age"]
