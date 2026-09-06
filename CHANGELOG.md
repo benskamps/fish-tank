@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-09-06
+
+### Changed
+- **`tank serve` re-ported to the current brokenbranch.dev/aquarium renderer.**
+  The local page had fallen ~1,100 lines behind the site's `aquarium.js`; it
+  now carries the same code again (the only deliberate differences: it polls
+  `/tank.json` every 15s instead of the site's `/api/tank` every 45s). What
+  that brings back: fish ease through their turns instead of snapping to face
+  their heading; a startled fish flinches with a C-start escape instead of a
+  teleport; park the pointer still over the water and one free swimmer drifts
+  over to inspect it; two same-species schoolers occasionally play a short game
+  of chase before melting back into the school; each schooling species has its
+  own shoaling personality (a rummy-nose school moves as one body, killifish
+  barely school at all); plecos and cleaner shrimp hold station on the
+  substrate and relocate a few body lengths at a time; and the floor is the
+  composed aquascape — two masses on the golden thirds with a protected
+  swimming lane between, three depth bands, and the skull as the keystone.
+- **Ember is rendered.** The adopt-only resident now has an entry in every
+  renderer table (field guide, size, pace, calm, bioluminescence, shoaling),
+  so it swims with a name and a tooltip instead of as an untitled generic
+  glyph. Its glyph still comes from the tick, brightest-last.
+- **`light_level` is honoured.** The renderer reads `weather.light_level` and
+  dims the phase's lamp — ray strength, the caustic sheet, the phase glow —
+  within the phase, so an idle machine at noon sits visibly dimmer than a busy
+  one. The phase stays the palette; light only modulates it. Applied under
+  reduced motion too (it is a colour, not motion).
+- **The poll pauses in background tabs.** Hiding the tab now stops the
+  `/tank.json` timer as well as the animation loop, and both restart on
+  return. The old port kept fetching from a tab nobody was looking at.
+- `GET /tank.json` now emits the same shape as the published site snapshot:
+  it gained `schema` and `weather.pressure`, and `tick_at` comes from the
+  world's `last_tick_at` (falling back to the file mtime only for a world that
+  predates it). One renderer, one contract, both feeds.
+
+### Fixed
+- The README's version badge had been stuck at 0.6.0 since that release; it
+  now tracks `VERSION`.
+
 ## [0.8.0] - 2026-07-03
 
 ### Added
@@ -120,7 +158,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First public cut of fish-tank: a terminal aquarium that lives in your machine, fed by
   hardware weather and your real activity, with a bestiary, mortality, and epitaphs.
 
-[Unreleased]: https://github.com/benskamps/fish-tank/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/benskamps/fish-tank/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/benskamps/fish-tank/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/benskamps/fish-tank/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/benskamps/fish-tank/releases/tag/v0.7.0
 [0.6.0]: https://github.com/benskamps/fish-tank/releases/tag/v0.6.0

@@ -25,7 +25,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![version](https://img.shields.io/badge/version-0.6.0-brightgreen.svg)](VERSION)
+[![version](https://img.shields.io/badge/version-0.9.0-brightgreen.svg)](VERSION)
 [![tests](https://github.com/benskamps/fish-tank/actions/workflows/test.yml/badge.svg)](https://github.com/benskamps/fish-tank/actions/workflows/test.yml)
 
 > 🌲 Part of the [Brokenbranch Lab](https://www.brokenbranch.dev/lab/) — one human and a cluster of AI agents shipping strange software in public. The fish tank is one experiment among many; the front door lists them all.
