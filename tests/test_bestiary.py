@@ -106,6 +106,24 @@ def test_sparse_override_species_is_spawn_safe(tmp_path):
     assert fish.species == "bare"
 
 
+def test_push_and_merge_species_are_bundled():
+    """pushfish and mergefish ship in the bundled bestiary, wired to triggers.
+
+    The glyph pools are additionally covered by tests/test_glyphs.py, which
+    asserts every bundled glyph against the canonical right-facing rule — so a
+    backwards spelling fails there rather than moonwalking in the aquarium.
+    """
+    species = load_bundled()
+    assert species["pushfish"].spawn_trigger == "push_event"
+    assert species["mergefish"].spawn_trigger == "merge_event"
+    assert species["pushfish"].category == "project_born"
+    assert species["mergefish"].category == "project_born"
+    # Distinct silhouettes, and distinct traces once they are gone.
+    assert set(species["pushfish"].glyph_pool).isdisjoint(
+        species["mergefish"].glyph_pool)
+    assert species["pushfish"].fossil_glyph != species["mergefish"].fossil_glyph
+
+
 def test_malformed_lifespan_overrides_do_not_crash(tmp_path):
     from tank.bestiary import load_bestiary
     p = tmp_path / "bestiary.yaml"

@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **pushfish and mergefish — two residents born from the events git already
+  records for you.** The tank could see a commit, a release and a new project,
+  but not the two moments that actually feel like progress: getting work out of
+  the machine, and a pull request landing.
+  - **pushfish** (`>><(°>`) is born from a real `git push`. Quick, darty,
+    short-lived — momentum is real and momentum fades. The chevrons trailing it
+    are the current at its back.
+  - **mergefish** (`><(M(°>`) is born when a pull request lands. Bigger, calm,
+    and it holds station with the other landmark project fish, because a merge
+    is the one event here that cannot come apart again. It outlives by weeks
+    every push that carried it.
+- **A test that holds the renderer's species tables to the bestiary.**
+  `bestiary.yaml` does not drive `tank serve`; the renderer carries its own
+  field guide, size, pace and glow maps, and a species missing from them still
+  swims — at every default, with no legend row and no colour. That is what
+  happened when notefish was introduced. Now a species added to the bestiary
+  and forgotten in the renderer fails a test instead of shipping invisible.
+
+### Notes on how the two events are detected — no network, ever
+- **A push** is read from the reflog git writes on your remote-tracking refs,
+  keyed on the subject `update by push`. A fetch or a pull writes `fetch …` /
+  `pull …` instead, so work *arriving* from someone else never spawns anything.
+  Every `refs/remotes/*` ref is scanned, not just the current branch's push
+  destination: on a real machine the checked-out branch often has no upstream
+  at all, and the newest push is frequently on a branch nobody is standing on.
+- **A merged PR** is read from the commit subject — GitHub's classic
+  `Merge pull request #12 from …` and its squash-merge `… (#12)`. A release
+  that lands via PR matches both patterns; **ship wins**, so a release stays a
+  shipfish.
+- Dedup is a per-repo high-water mark on the reflog timestamp, and the first
+  sighting of a repo baselines silently. Installing the tank onto a machine
+  with years of reflog history spawns nothing for it.
+
 ## [0.9.0] - 2026-09-06
 
 ### Changed

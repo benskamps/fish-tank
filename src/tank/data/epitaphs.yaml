@@ -15,6 +15,8 @@ old_age:
   default: "{name} ({species}) — a long life of {age_days} days. Drifted into the dark."
   shipfish: "{name} — carried {project} far. Set down its work after {age_days} days."
   founderfish: "{name} — laid the foundation. {age_days} days. Remembered."
+  pushfish: "{name} — pushed {project} out into the world and coasted {age_days} days on it. Momentum always did run out."
+  mergefish: "{name} — joined two streams of {project} into one. {age_days} days holding that place. The join outlives the fish."
 
 released:
   default: "{name} — set free on {died_short}. Out there somewhere."
