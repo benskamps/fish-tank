@@ -76,3 +76,8 @@ class World:
     seen_notes: set[str]
     seen_projects: set[str]
     config_overrides: dict = field(default_factory=dict)
+    #: repo path -> ISO timestamp of the newest `git push` this tank has already
+    #: accounted for. A high-water mark rather than a ref tip, because pushes
+    #: land across many remote-tracking refs and "the newest sha" is ambiguous
+    #: once more than one of them is in play. See observer._scan_pushes.
+    seen_pushes: dict[str, str] = field(default_factory=dict)

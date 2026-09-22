@@ -95,4 +95,10 @@ def world_from_json(blob: str) -> World:
         seen_notes=seen_notes if isinstance(seen_notes, set) else set(seen_notes),
         seen_projects=seen_projects if isinstance(seen_projects, set) else set(seen_projects),
         config_overrides=dict(raw.get("config_overrides", {})),
+        # Every world written before pushfish existed lacks this key. Default it
+        # rather than indexing it: the 2026-06-04 incident was a required key
+        # meeting an older world, raising KeyError inside a bare except, and
+        # quarantining a live tank into an empty one. The observer re-baselines
+        # an empty ledger on its next scan, which costs one tick of silence.
+        seen_pushes=dict(raw.get("seen_pushes", {})),
     )

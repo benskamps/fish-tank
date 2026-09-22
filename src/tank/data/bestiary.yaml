@@ -178,6 +178,30 @@ driftfish:
   mood_bias: {calm: 0.5, darting: 0.5}
   description: "Born from regular commits. Short-lived. Schools with its kin."
 
+pushfish:
+  category: project_born
+  glyph_pool: [">><(°>", ">>><(°>"]
+  fossil_glyph: "»"
+  base_lifespan_days: [5, 18]
+  spawn_trigger: push_event
+  spawn_weight: 1.0
+  zone: mid
+  social: solo
+  mood_bias: {darting: 0.7, calm: 0.3}
+  description: "Born when you push work out of the machine and into the world. The chevrons trailing it are the current at its back. Momentum is real, and momentum fades — it outlives a single commit and little else."
+
+mergefish:
+  category: project_born
+  glyph_pool: ["><(M(°>", "><((M(°>"]
+  fossil_glyph: "◈"
+  base_lifespan_days: [21, 120]
+  spawn_trigger: merge_event
+  spawn_weight: 1.0
+  zone: mid
+  social: solo
+  mood_bias: {calm: 0.75, darting: 0.15, sleeping: 0.1}
+  description: "Born when a pull request lands. Two streams joined into one, which is the only thing here that cannot come apart again — so it settles, holds its place, and outlives every push that carried it."
+
 notefish:
   category: note_born
   glyph_pool: ["><(W(°>"]

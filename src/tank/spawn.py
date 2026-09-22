@@ -15,6 +15,8 @@ EVENT_TO_TRIGGER = {
     "note_written": "note_event",
     "commit": "commit_event",
     "kernel_error": "kernel_event",
+    "push": "push_event",
+    "pr_merge": "merge_event",
 }
 
 NIGHT_FISH = "night-fish"

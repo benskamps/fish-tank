@@ -22,10 +22,77 @@ logger = logging.getLogger(__name__)
 
 SHIP_RE = re.compile(r"^(ship|release|chore: release|version bump)\b", re.IGNORECASE)
 
+# A commit that lands a pull request — mergefish's signal. Two shapes: GitHub's
+# classic merge commit ("Merge pull request #12 from …") and its squash-merge
+# subject, which ends with the PR number ("feat(mood): add a murky mood (#6)").
+# The squash shape is how this project's own PRs land.
+#
+# SHIP_RE is tested first and wins ties, because the one real collision is a
+# release that landed via PR — this repo's own `release: v0.9.0 … (#11)` matches
+# both patterns — and a release is the rarer, prouder event, so shipfish keeps
+# it. Pinned by test_release_landing_via_pr_is_a_ship_not_a_merge.
+#
+# Known and accepted: a purely local commit whose subject merely cites an issue
+# as "(#12)" reads as a merge here. That spelling IS the GitHub squash
+# convention, and no local signal distinguishes the two, so guessing would cost
+# more truth than it buys.
+MERGE_RE = re.compile(r"^Merge pull request #\d+|\(#\d+\)$")
+
+# The reflog subject git writes on a remote-tracking ref when YOU push. A fetch
+# or a pull writes "fetch …" / "pull …" instead. Keying on this subject rather
+# than on "the remote ref moved" is what keeps pushfish a fish about your own
+# work — see test_fetch_is_not_a_push, where a second clone's push arrives by
+# fetch and must not spawn anything.
+PUSH_REFLOG_SUBJECT = "update by push"
+
+# Safety cap, per repo per tick. Reflogs keep 90 days by default, so a tank that
+# was switched off for a while could otherwise wake into a hundred pushes at
+# once — the pushfish cousin of the 1358-fish bug.
+MAX_PUSH_EVENTS_PER_REPO = 5
+
 # Safety cap: with no watch allow-list, never scan more than this many candidate
 # dirs under the projects root. Above it, scan only the newest-by-mtime and warn
 # about the rest (no silent truncation -- hard project rule).
 MAX_UNFILTERED_REPOS = 50
+
+
+def _reflog_time(selector: str) -> dt.datetime | None:
+    """Pull the timestamp out of a ``%gD`` reflog selector.
+
+    Under ``--date=iso-strict`` git renders these as
+    ``refs/remotes/origin/main@{2026-09-20T23:11:47-04:00}``. Branch names may
+    themselves contain '@', so split on the LAST '@{'.
+
+    This is the reflog's own stamp — when the push happened — not the commit
+    date. The two differ arbitrarily whenever old work is pushed or a branch is
+    force-pushed, and only one of them is the event the tank is watching for.
+    """
+    _, sep, stamp = selector.rpartition("@{")
+    if not sep or not stamp.endswith("}"):
+        return None
+    try:
+        at = dt.datetime.fromisoformat(stamp[:-1])
+    except ValueError:
+        return None
+    return at if at.tzinfo else at.replace(tzinfo=dt.timezone.utc)
+
+
+def _baseline(newest: dt.datetime | None, now: dt.datetime) -> dt.datetime:
+    """The high-water mark to record the first time a repo is seen.
+
+    With pushes already in the reflog, the mark is the newest of them: the tank
+    notices pushes from when it starts watching, never a reflog's history.
+
+    With NO pushes in the reflog, the mark is one second before now — not `now`
+    itself. Reflog stamps carry whole seconds, so a push landing in the very
+    same second the tank first looked would be stamped *earlier* than a
+    microsecond-precision `now` and be dropped as stale. Nothing can replay
+    here, because there was nothing in the reflog to replay; backing off a
+    second only closes that window.
+    """
+    if newest is not None:
+        return newest
+    return now.replace(microsecond=0) - dt.timedelta(seconds=1)
 
 
 def _expand(value: str | None) -> Path | None:
@@ -141,8 +208,13 @@ class Observer:
     def scan_since(self, since: dt.datetime, world: World) -> list[Event]:
         events: list[Event] = []
         candidates = self._candidate_dirs()
+        # Real wall-clock, deliberately not the tank's (fakeable) Clock: reflog
+        # stamps are wall-clock, so the push baseline has to be compared against
+        # the true now. Same reasoning crashsense already documents for its
+        # dedup marker.
+        now = dt.datetime.now(tz=dt.timezone.utc)
         events.extend(self._scan_projects(candidates, world))
-        events.extend(self._scan_git(candidates, world))
+        events.extend(self._scan_git(candidates, world, now))
         events.extend(self._scan_notes(world))
         events.extend(self._scan_crashes())
         return events
@@ -177,8 +249,10 @@ class Observer:
                                  detail=str(entry), at=ctime))
         return out
 
-    def _scan_git(self, candidates: list[Path], world: World) -> list[Event]:
+    def _scan_git(self, candidates: list[Path], world: World,
+                  now: dt.datetime | None = None) -> list[Event]:
         out: list[Event] = []
+        now = now or dt.datetime.now(tz=dt.timezone.utc)
         for entry in candidates:
             if not (entry / ".git").exists():
                 continue
@@ -191,6 +265,11 @@ class Observer:
                 ).strip()
             except (subprocess.SubprocessError, FileNotFoundError):
                 continue
+            # Pushes are scanned independently of the commit dedup below. A push
+            # normally lands on a tick where HEAD has not moved since its
+            # commits were already counted, so if this sat after the
+            # `seen == head` short-circuit it would almost never run.
+            out.extend(self._scan_pushes(entry, key, world, now))
             seen = world.seen_commits.get(key)
             if seen == head:
                 continue
@@ -219,11 +298,83 @@ class Observer:
                 at = dt.datetime.fromisoformat(iso)
                 if at.tzinfo is None:
                     at = at.replace(tzinfo=dt.timezone.utc)
-                kind = "ship" if SHIP_RE.match(subject) else "commit"
+                if SHIP_RE.match(subject):
+                    kind = "ship"          # ship wins ties; see MERGE_RE
+                elif MERGE_RE.search(subject):
+                    kind = "pr_merge"
+                else:
+                    kind = "commit"
                 out.append(Event(kind=kind, project=entry.name,
                                  detail=sha, at=at))
             world.seen_commits[key] = head
         return out
+
+    def _scan_pushes(self, entry: Path, key: str, world: World,
+                     now: dt.datetime) -> list[Event]:
+        """Emit an event per ``git push`` that landed since the last scan.
+
+        Reads the reflogs of EVERY remote-tracking ref, not just the current
+        branch's push destination. That choice was measured on this estate
+        rather than assumed: one repo's checked-out branch had no upstream at
+        all, which makes ``git rev-parse HEAD@{push}`` a fatal error and takes a
+        HEAD-only reader blind across the whole repo; another's most recent push
+        sat on a branch nobody was standing on; a third had 83 pushes spread
+        over 39 refs. Work gets pushed from branches you are not on.
+
+        Dedup is a per-repo high-water mark on the reflog timestamp rather than
+        a ref tip, because "the newest sha" stops being a single answer once
+        several refs are in play. The first sighting of a repo baselines and
+        emits nothing — the tank notices pushes from when it starts watching,
+        never a reflog's history.
+
+        Two pushes inside the same second collapse into one event, since reflog
+        stamps have one-second resolution. That is the safe direction to fail:
+        one fish too few, never a duplicate.
+
+        Best-effort throughout. A repo with no remote, no reflog, or no git at
+        all returns an empty list rather than raising — this runs inside a
+        headless tick where an exception would take the whole aquarium down.
+        """
+        try:
+            log = proc.check_output(
+                ["git", "-C", str(entry), "log", "-g",
+                 "--date=iso-strict", "--format=%gD%x09%gs%x09%H",
+                 "--glob=refs/remotes/*"],
+                encoding="utf-8", errors="replace",
+                timeout=3.0, stderr=subprocess.DEVNULL,
+            ).splitlines()
+        except (subprocess.SubprocessError, FileNotFoundError):
+            return []
+
+        pushes: list[tuple[dt.datetime, str]] = []
+        for line in log:
+            selector, _, rest = line.partition("\t")
+            subject, _, sha = rest.partition("\t")
+            if not subject.startswith(PUSH_REFLOG_SUBJECT):
+                continue
+            at = _reflog_time(selector)
+            if at is not None:
+                pushes.append((at, sha.strip()))
+
+        newest = max((at for at, _ in pushes), default=None)
+        seen = world.seen_pushes.get(key)
+        if seen is None:
+            world.seen_pushes[key] = _baseline(newest, now).isoformat()
+            return []
+        try:
+            watermark = dt.datetime.fromisoformat(seen)
+        except (TypeError, ValueError):
+            # A hand-edited or future-format mark: re-baseline rather than
+            # replay a reflog's worth of history into the tank.
+            world.seen_pushes[key] = _baseline(newest, now).isoformat()
+            return []
+
+        fresh = sorted((p for p in pushes if p[0] > watermark),
+                       key=lambda p: p[0], reverse=True)
+        if newest is not None and newest > watermark:
+            world.seen_pushes[key] = newest.isoformat()
+        return [Event(kind="push", project=entry.name, detail=sha, at=at)
+                for at, sha in fresh[:MAX_PUSH_EVENTS_PER_REPO]]
 
     def _scan_notes(self, world: World) -> list[Event]:
         out: list[Event] = []

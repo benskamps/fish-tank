@@ -71,6 +71,31 @@ def test_legacy_world_load_or_init_keeps_fish(tmp_tank_dir, fixed_now):
     assert not list(tmp_tank_dir.glob("world.json.broken-*"))
 
 
+def test_pre_pushfish_world_loads_with_an_empty_push_ledger(fixed_now):
+    """A world saved before pushfish existed must load, not quarantine.
+
+    The 2026-06-04 incident is the reason this test exists: a schema key the
+    new code required and the on-disk world did not have raised KeyError inside
+    a bare except, which silently quarantined a live tank and reseeded it
+    empty. Every tank running today has a world.json with no seen_pushes in it.
+    """
+    from tank.models import Weather, World
+    from tank.serdes import world_from_json, world_to_json
+
+    old = World(
+        schema_version=1, created_at=fixed_now, last_tick_at=fixed_now,
+        fish=[], weather=Weather(20.0, 0.0, 0.0, 0.5, 0.0, []),
+        seen_commits={"/x": "abc"}, seen_notes=set(), seen_projects={"x"},
+        config_overrides={},
+    )
+    blob = json.loads(world_to_json(old))
+    blob.pop("seen_pushes", None)          # exactly what is on disk today
+    world = world_from_json(json.dumps(blob))
+
+    assert world.seen_pushes == {}
+    assert world.seen_commits == {"/x": "abc"}
+
+
 def test_quarantine_leaves_a_why_file(tmp_tank_dir, fixed_now):
     """A genuinely corrupt world leaves the failure reason on disk — the tick
     runs headless (pythonw), so a silent quarantine just looks like the fish

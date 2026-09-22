@@ -204,6 +204,8 @@ _JS = r"""
     shipfish:     ['Shipfish', 'Born when a project ships. Long-lived and proud.'],
     founderfish:  ['Founderfish', 'Born when a new project appears. Long-lived.'],
     driftfish:    ['Driftfish', 'Born from commits. Schools with its kin.'],
+    pushfish:     ['Pushfish', 'Born when you push work out into the world. Quick, and short-lived — momentum fades.'],
+    mergefish:    ['Mergefish', 'Born when a pull request lands. Two streams joined into one. Settled, and it holds its place.'],
     witnessfish:  ['Witnessfish', 'Born when you write notes, plans, or history. It remembers what you wrote.'],
     notefish:     ['Notefish', 'Born when you write notes, plans, or history. It remembers what you wrote.'],
     cleanershrimp:['Cleaner shrimp', 'Rare. Tends the reef. A small good omen.'],
@@ -217,8 +219,9 @@ _JS = r"""
 
   // Per-species size (rem). Big proud fish read as foreground; fry stay tiny.
   var SIZE = {
-    pleco: 1.15, shipfish: 1.12, founderfish: 1.06, 'night-fish': 1.0,
+    pleco: 1.15, shipfish: 1.12, founderfish: 1.06, mergefish: 1.02, 'night-fish': 1.0,
     witnessfish: 0.94, notefish: 0.94, coldfin: 0.92, crashstrider: 0.86, emberlung: 0.84,
+    pushfish: 0.83,
     thermalwisp: 0.82, guppy: 0.8, snail: 0.8, frostneon: 0.78, rummynose: 0.78,
     driftfish: 0.76, hatchetfish: 0.74, tetra: 0.68, killifish: 0.66, cleanershrimp: 0.6,
     crab: 0.92,
@@ -339,7 +342,10 @@ _JS = r"""
 
   var ZONE_BAND = { surface: [8, 28], mid: [30, 64], bottom: [66, 86] };
   // Proud project fish hold their place as landmarks; everyone else swims.
-  var ANCHOR = { shipfish: 1, founderfish: 1, witnessfish: 1, notefish: 1 };
+  // mergefish joins them: a landed PR is the one event here that cannot come
+  // apart again, so it stations rather than commutes. pushfish deliberately
+  // does NOT — momentum that holds still is not momentum.
+  var ANCHOR = { shipfish: 1, founderfish: 1, witnessfish: 1, notefish: 1, mergefish: 1 };
   // Loose shoalers — they flock with their own kind.
   var SCHOOL = { tetra: 1, guppy: 1, rummynose: 1, driftfish: 1, killifish: 1, frostneon: 1 };
   // Shared empty mates list for non-schoolers — one frozen-shape sentinel, so
@@ -367,8 +373,8 @@ _JS = r"""
   };
   var SHOAL_DEFAULT = SHOAL.tetra;
   // Darters: short, sharp burst-and-coast. Grazers: long, gentle.
-  var DARTY = { crashstrider: 1, killifish: 1, thermalwisp: 1, emberlung: 1, hatchetfish: 1 };
-  var CALM  = { snail: 1, pleco: 1, cleanershrimp: 1, coldfin: 1, 'night-fish': 1, anglerfish: 1, ember: 1 };
+  var DARTY = { crashstrider: 1, killifish: 1, thermalwisp: 1, emberlung: 1, hatchetfish: 1, pushfish: 1 };
+  var CALM  = { snail: 1, pleco: 1, cleanershrimp: 1, coldfin: 1, 'night-fish': 1, anglerfish: 1, ember: 1, mergefish: 1 };
   // Station-holders: armored bottom dwellers that HOLD a spot on the substrate
   // for long stretches, then relocate a few body lengths. They leave the whole
   // free-swim chain (wander/boids/seekZone/startle/eel-scatter) — armored
@@ -389,6 +395,7 @@ _JS = r"""
     snail: 150, pleco: 95, cleanershrimp: 85,                 // grazers: glacial
     crab: 18,                                                 // quick scuttle
     crashstrider: 12, killifish: 13, thermalwisp: 13,         // darty
+    pushfish: 14,                                             // momentum: crosses fast
     emberlung: 14, hatchetfish: 16,
     coldfin: 30, frostneon: 28, 'night-fish': 24,             // languid
     ember: 32,                                                // resident: unhurried mid-water cruise
@@ -479,6 +486,7 @@ _JS = r"""
   var BIO_WEIGHT = {
     anglerfish: 1.0, frostneon: 0.9, notefish: 0.85, witnessfish: 0.85,
     driftfish: 0.8, 'night-fish': 0.8, killifish: 0.7, thermalwisp: 0.6,
+    pushfish: 0.6, mergefish: 0.55,
     rummynose: 0.6, tetra: 0.55, guppy: 0.5, coldfin: 0.5, shipfish: 0.5,
     founderfish: 0.5, hatchetfish: 0.5, crashstrider: 0.45, emberlung: 0.45,
     cleanershrimp: 0.4, crab: 0.3, pleco: 0.25, snail: 0.2,
@@ -3558,6 +3566,11 @@ _PAGE = """<!DOCTYPE html>
     }
     .fish.night-fish { color: var(--accent); opacity: 0.92; filter: drop-shadow(0 0 6px rgba(139,92,246,0.5)); }
     .fish.shipfish { color: var(--primary); }
+    /* The two git events, told apart at a glance. Both hues are already in this
+       file's palette — pushfish takes the dawn accent (warm, leaving), mergefish
+       sits beside the eel's teal (cool, settled). */
+    .fish.pushfish { color: #e0a96d; }
+    .fish.mergefish { color: #6fb3a8; }
     /* Public-named fish wear a small label (only on non-flipping anchor fish). */
     .fish-name {
       position: absolute; top: 100%; left: 50%; transform: translateX(-50%);

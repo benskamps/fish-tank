@@ -51,6 +51,8 @@ tick reads your machine and your work, then spawns or retires fish accordingly:
 | When this happens on your machine… | …this fish appears |
 |---|---|
 | You make a commit | **driftfish** — short-lived, schools with its kin |
+| You push work to a remote | **pushfish** — quick and short-lived; momentum fades |
+| A pull request lands | **mergefish** — settled and long-lived; it holds its place |
 | You ship a release | **shipfish** — long-lived, named after the project |
 | A new project appears | **founderfish** — the longest-lived of all |
 | You write notes, plans, or history | **notefish** — calm; it remembers what you wrote down |

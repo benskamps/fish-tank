@@ -1,11 +1,13 @@
 import datetime as dt
 import json
+import re
 import threading
 import time
 import urllib.request
 
+from tank.bestiary import load_bundled
 from tank.clock import FakeClock
-from tank.serve import serve
+from tank.serve import _PAGE, serve
 from tank.tick import TickEngine
 
 
@@ -103,3 +105,84 @@ def test_serve_tank_json_warms_up_without_a_world(tmp_tank_dir):
     _start_server(port)
     snap = json.loads(_fetch(port, "/tank.json"))
     assert snap == {"empty": True}
+
+
+# ---------------------------------------------------------------------------
+# The renderer's species tables
+# ---------------------------------------------------------------------------
+#
+# bestiary.yaml does NOT drive the renderer. serve.py carries its own JS maps —
+# the field guide, per-species size, glow, pace, anchoring — and a species that
+# is in the bestiary but absent from them renders at every default: 0.8rem, no
+# colour, no legend row. Present, but not a creature anyone can tell apart.
+# That is precisely what happened when notefish was introduced, and it took a
+# companion fix in a different repo to notice. These tests make the tables a
+# thing a test can hold to the bestiary, instead of a list someone must
+# remember to update.
+
+
+def _js_block(page: str, name: str) -> str:
+    """The body of a `var NAME = { … };` literal in the served page."""
+    # Some of these literals are column-aligned (`var CALM  = {`), so the
+    # spacing around `=` is not fixed.
+    head = r"var " + re.escape(name) + r"\s*=\s*\{"
+    m = re.search(head + r"(.*?)\n  \};", page, re.S) \
+        or re.search(head + r"(.*?)\};", page, re.S)
+    assert m, f"no {name} map in the served page"
+    return m.group(1)
+
+
+def _has_key(block: str, key: str) -> bool:
+    return bool(re.search(r"(?:^|[{,\s])'?" + re.escape(key) + r"'?\s*:",
+                          block, re.M))
+
+
+def test_every_bundled_species_has_a_render_entry():
+    """THE guard: no species may reach the water without a look of its own.
+
+    Holds for all 20 species on master today, so it starts green for a reason
+    rather than by being vacuous — add a species to bestiary.yaml and forget
+    the renderer, and this is what tells you.
+    """
+    page = _PAGE
+    guide, size, glow = (_js_block(page, "SPECIES"),
+                         _js_block(page, "SIZE"),
+                         _js_block(page, "BIO_WEIGHT"))
+    missing = {
+        "SPECIES": [k for k in load_bundled() if not _has_key(guide, k)],
+        "SIZE": [k for k in load_bundled() if not _has_key(size, k)],
+        "BIO_WEIGHT": [k for k in load_bundled() if not _has_key(glow, k)],
+    }
+    assert not any(missing.values()), f"species missing render entries: {missing}"
+
+
+def test_pushfish_and_mergefish_are_visibly_distinct():
+    """Not just present — different to look at, and different to watch.
+
+    Size and colour separate them at a glance; pace and anchoring separate them
+    in motion. A push streaks through; a merge settles in and holds its place
+    the way the other landmark project fish do.
+    """
+    page = _PAGE
+    size = _js_block(page, "SIZE")
+
+    push_size = float(re.search(r"pushfish:\s*([0-9.]+)", size).group(1))
+    merge_size = float(re.search(r"mergefish:\s*([0-9.]+)", size).group(1))
+    # A landed PR reads bigger than the push that carried it.
+    assert merge_size > push_size
+
+    # The merge holds station with the other landmark project fish; the push
+    # streaks past. Anchored species carry no CROSS pace by house convention —
+    # shipfish, founderfish and notefish are all absent from it — so the pace
+    # belongs to the swimmer alone.
+    assert _has_key(_js_block(page, "ANCHOR"), "mergefish")
+    assert not _has_key(_js_block(page, "ANCHOR"), "pushfish")
+    assert _has_key(_js_block(page, "DARTY"), "pushfish")
+    assert _has_key(_js_block(page, "CALM"), "mergefish")
+    push_cross = float(re.search(r"pushfish:\s*([0-9.]+)",
+                                 _js_block(page, "CROSS")).group(1))
+    assert push_cross < 22          # quicker than the renderer's default
+
+    # Each wears its own colour.
+    assert ".fish.pushfish" in page
+    assert ".fish.mergefish" in page
